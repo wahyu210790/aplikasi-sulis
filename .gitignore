@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+**/node_modules/
+vendor/
+**/vendor/
+
+# Environment and sensitive configuration files
+.env
+.env.backup
+.env.production
+.env.local
+backend/.env
+backend/.env.backup
+backend/.env.production
+
+# Logs and cache
+*.log
+**/storage/logs/*.log
+.phpunit.result.cache
+**/.phpunit.result.cache
+**/.phpunit.cache/
+backend/storage/framework/cache/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+
+# Temporary and build files
+tmp-puppeteer/
+backend/public/storage
+backend/public/build
+backend/public/hot
+
+# Database files
+*.sqlite
+*.db
+
+# OS / IDE metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.zed/
