@@ -1,13 +1,24 @@
 import { apiClient } from './api.js';
 import { renderLoadingState, renderEmptyStateUI, renderPagination, createDebounce } from './utils.js';
+import { openModal, closeModal } from './modal.js';
 
 export async function renderCategories(container) {
+  const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
+  const canMutate = ['owner', 'warehouse'].includes(user.role);
+
   let state = {
     search: '',
     sort: 'name',
     direction: 'asc',
     page: 1,
   };
+
+  const addButtonHtml = canMutate ? `
+    <button id="addCategoryBtn" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm shrink-0">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Tambah Kategori
+    </button>
+  ` : '';
 
   container.innerHTML = `
     <div class="space-y-4">
@@ -17,17 +28,21 @@ export async function renderCategories(container) {
             <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
-            <input type="text" id="searchInput" placeholder="Cari nama kategori..." value="${state.search}" class="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 bg-slate-50/50">
+            <input type="text" id="searchInput" placeholder="Cari nama atau kode kategori..." value="${state.search}" class="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 bg-slate-50/50">
           </div>
           <select id="sortSelect" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600">
             <option value="name-asc">Urut: Nama (A-Z)</option>
             <option value="name-desc">Urut: Nama (Z-A)</option>
+            <option value="code-asc">Urut: Kode (Asc)</option>
             <option value="created_at-desc">Urut: Terbaru</option>
           </select>
         </div>
-        <button id="resetFilterBtn" class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
-          Reset Filter
-        </button>
+        <div class="flex items-center gap-2">
+          <button id="resetFilterBtn" class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
+            Reset Filter
+          </button>
+          ${addButtonHtml}
+        </div>
       </div>
 
       <div id="categoriesTableContainer"></div>
@@ -55,7 +70,7 @@ export async function renderCategories(container) {
 
       const rows = data.map(c => `
         <tr class="hover:bg-slate-50/80 transition-colors">
-          <td class="px-5 py-3.5 font-mono text-[11px] font-semibold text-slate-500">#${c.id}</td>
+          <td class="px-5 py-3.5 font-mono text-[11px] font-semibold text-slate-500">${c.code || `#${c.id}`}</td>
           <td class="px-5 py-3.5 font-medium text-slate-900">${c.name ?? '-'}</td>
           <td class="px-5 py-3.5 text-slate-500 text-xs">${c.description ?? '-'}</td>
         </tr>`).join('');
@@ -68,7 +83,7 @@ export async function renderCategories(container) {
             <table class="w-full text-xs text-left border-collapse">
               <thead class="bg-slate-50 text-slate-500 uppercase font-semibold text-[10px] tracking-wider border-b border-slate-100">
                 <tr>
-                  <th class="px-5 py-3">ID</th>
+                  <th class="px-5 py-3">Kode / ID</th>
                   <th class="px-5 py-3">Nama Kategori</th>
                   <th class="px-5 py-3">Deskripsi</th>
                 </tr>
@@ -94,6 +109,90 @@ export async function renderCategories(container) {
       tableContainer.innerHTML = `<div class="p-6 text-center text-xs text-rose-600">${msg}</div>`;
     }
   };
+
+  // Add Category Modal Handler
+  if (canMutate) {
+    const addBtn = container.querySelector('#addCategoryBtn');
+    addBtn?.addEventListener('click', () => {
+      const formHtml = `
+        <form id="categoryCreateForm" class="space-y-4">
+          <div id="categoryFormError" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs"></div>
+          
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Nama Kategori <span class="text-rose-500">*</span></label>
+            <input type="text" name="name" placeholder="Contoh: Material Bangunan" required class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Kode Kategori (Opsional)</label>
+            <input type="text" name="code" placeholder="Kosongkan untuk generate otomatis (misal CAT-XXXXXX)" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono" />
+            <p class="text-[11px] text-slate-400 mt-1">Jika dikosongkan, sistem akan membuat kode unik secara otomatis.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Deskripsi (Opsional)</label>
+            <textarea name="description" rows="3" placeholder="Keterangan singkat kategori..." class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"></textarea>
+          </div>
+
+          <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+            <button type="button" id="cancelCategoryBtn" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl transition-all shadow-sm">
+              Batal
+            </button>
+            <button type="submit" id="saveCategoryBtn" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+              <span>Simpan Kategori</span>
+            </button>
+          </div>
+        </form>
+      `;
+
+      openModal({
+        title: 'Tambah Kategori Baru',
+        body: formHtml
+      });
+
+      document.getElementById('cancelCategoryBtn')?.addEventListener('click', closeModal);
+
+      const form = document.getElementById('categoryCreateForm');
+      const errBox = document.getElementById('categoryFormError');
+      const submitBtn = document.getElementById('saveCategoryBtn');
+
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errBox.classList.add('hidden');
+        errBox.textContent = '';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg> Menyimpan...`;
+
+        const formData = new FormData(form);
+        const payload = {
+          name: formData.get('name')?.trim(),
+          code: formData.get('code')?.trim() || null,
+          description: formData.get('description')?.trim() || null,
+        };
+
+        try {
+          await apiClient.post('/categories', payload);
+          closeModal();
+          loadData();
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Simpan Kategori</span>';
+          let msg = 'Gagal menyimpan kategori.';
+          if (err.payload?.errors) {
+            msg = Object.values(err.payload.errors).flat().join('<br>');
+          } else if (err.payload?.message) {
+            msg = err.payload.message;
+          }
+          errBox.innerHTML = msg;
+          errBox.classList.remove('hidden');
+        }
+      });
+    });
+  }
 
   const debouncedSearch = createDebounce((val) => {
     state.search = val;

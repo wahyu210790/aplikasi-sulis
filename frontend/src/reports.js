@@ -86,7 +86,7 @@ export async function renderReports(container, fullRoute = '/reports') {
   const tabsHtml = `
     <div class="mb-6 flex overflow-x-auto p-1.5 bg-slate-200/50 rounded-2xl border border-slate-200/60 shadow-inner no-scrollbar gap-1 max-w-full">
       ${available.map((r, idx) => `
-        <button data-report="${r.id}" class="px-4 py-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 ${idx === 0 ? 'bg-white text-blue-600 font-semibold shadow-sm border border-slate-200/80' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'}">
+        <button data-report="${r.id}" class="px-3.5 sm:px-4 py-2.5 sm:py-2 whitespace-nowrap rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 min-h-[40px] shrink-0 ${idx === 0 ? 'bg-white text-blue-600 font-semibold shadow-sm border border-slate-200/80' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'}">
           ${r.label}
         </button>
       `).join('')}

@@ -99,9 +99,15 @@ async function renderProjectList(target) {
             <option value="created_at-desc">Urut: Terbaru</option>
           </select>
         </div>
-        <button id="resetFilterBtn" class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
-          Reset Filter
-        </button>
+        <div class="flex items-center gap-2">
+          <button id="resetFilterBtn" class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
+            Reset Filter
+          </button>
+          <button id="addProjectBtn" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Tambah Proyek
+          </button>
+        </div>
       </div>
 
       <div id="projectsTableContainer"></div>
@@ -227,6 +233,19 @@ async function renderProjectList(target) {
     target.querySelector('#sortSelect').value = 'name-asc';
 
     loadData();
+  });
+
+  target.querySelector('#addProjectBtn')?.addEventListener('click', () => {
+    // Switch active tab styling in parent container if present
+    const parentContainer = target.closest('#mainContent') || document;
+    parentContainer.querySelectorAll('button[data-tab]').forEach(b => {
+      if (b.getAttribute('data-tab') === 'new') {
+        b.className = 'px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-blue-600 shadow-sm border border-slate-200/80';
+      } else {
+        b.className = 'px-5 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-white/60';
+      }
+    });
+    renderProjectForm(target);
   });
 
   await loadData();
@@ -462,18 +481,27 @@ async function renderProjectForm(target) {
             <h3 class="text-xl font-bold text-slate-900 font-poppins mb-6">Buat Proyek Baru</h3>
 
             <form id="projectForm" class="space-y-5">
+              <div id="projectFormError" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs"></div>
+
               <div>
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Nama Proyek</label>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Nama Proyek <span class="text-rose-500">*</span></label>
                 <input type="text" name="name" placeholder="Contoh: Renovasi Gedung Utama A" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-xl px-3.5 py-2.5 shadow-sm text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" required />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Kode Proyek (Opsional)</label>
+                <input type="text" name="code" placeholder="Kosongkan untuk generate otomatis (misal PRJ-XXXXXX)" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-xl px-3.5 py-2.5 shadow-sm text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono transition-all" />
+                <p class="text-[11px] text-slate-400 mt-1">Jika dikosongkan, sistem akan membuat kode unik secara otomatis.</p>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Status Proyek</label>
                   <select name="status" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-xl px-3.5 py-2.5 shadow-sm text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
-                    <option value="PLANNED">PLANNED</option>
-                    <option value="IN_PROGRESS" selected>IN_PROGRESS</option>
-                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="draft">DRAFT</option>
+                    <option value="active" selected>ACTIVE</option>
+                    <option value="completed">COMPLETED</option>
+                    <option value="cancelled">CANCELLED</option>
                   </select>
                 </div>
 
@@ -492,33 +520,77 @@ async function renderProjectForm(target) {
                 <button type="button" id="cancelBtn" class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-semibold rounded-xl transition-all shadow-sm">
                   Batal
                 </button>
-                <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
-                  Simpan Proyek
+                <button type="submit" id="saveProjectBtn" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                  <span>Simpan Proyek</span>
                 </button>
               </div>
             </form>
           </div>
         </div>`;
 
-      const backToList = () => renderProjectList(target);
-      document.getElementById('backBtn').addEventListener('click', () => renderProjectList(target));
-      document.getElementById('cancelBtn').addEventListener('click', () => renderProjectList(target));
+      const backToList = () => {
+        const parentContainer = target.closest('#mainContent') || document;
+        parentContainer.querySelectorAll('button[data-tab]').forEach(b => {
+          if (b.getAttribute('data-tab') === 'list') {
+            b.className = 'px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-blue-600 shadow-sm border border-slate-200/80';
+          } else {
+            b.className = 'px-5 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-white/60';
+          }
+        });
+        renderProjectList(target);
+      };
+
+      document.getElementById('backBtn')?.addEventListener('click', backToList);
+      document.getElementById('cancelBtn')?.addEventListener('click', backToList);
 
       const form = document.getElementById('projectForm');
+      const errBox = document.getElementById('projectFormError');
+      const submitBtn = document.getElementById('saveProjectBtn');
+
       form.addEventListener('submit', async e => {
         e.preventDefault();
-        const data = Object.fromEntries(new FormData(form));
-        if (!data.name || data.revenue === '' || Number(data.revenue) < 0) {
-          alert('Harap isi nama dan nilai revenue proyek dengan valid.');
+        errBox.classList.add('hidden');
+        errBox.textContent = '';
+
+        const formData = new FormData(form);
+        const name = formData.get('name')?.trim();
+        const rawRev = formData.get('revenue');
+
+        if (!name || rawRev === '' || Number(rawRev) < 0) {
+          errBox.textContent = 'Harap isi nama dan nilai revenue proyek dengan valid.';
+          errBox.classList.remove('hidden');
           return;
         }
-        data.revenue = Number(data.revenue);
+
+        const data = {
+          name,
+          code: formData.get('code')?.trim() || null,
+          status: formData.get('status') || 'draft',
+          revenue: Number(rawRev),
+          description: formData.get('description')?.trim() || null,
+        };
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg> Menyimpan...`;
+
         try {
           await apiClient.post('/projects', data);
-          await renderProjectList(target);
+          backToList();
         } catch (err) {
-          const msg = err.status === 422 ? 'Validasi gagal.' : 'Gagal menyimpan proyek.';
-          target.innerHTML = renderErrorState(msg, load);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Simpan Proyek</span>';
+          let msg = 'Gagal menyimpan proyek.';
+          if (err.payload?.errors) {
+            msg = Object.values(err.payload.errors).flat().join('<br>');
+          } else if (err.payload?.message) {
+            msg = err.payload.message;
+          }
+          errBox.innerHTML = msg;
+          errBox.classList.remove('hidden');
         }
       });
     } catch (err) {

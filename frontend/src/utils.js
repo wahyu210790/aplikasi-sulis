@@ -26,12 +26,12 @@ export const formatDate = (dateStr) => {
 /** Render a clean page header section */
 export const renderPageHeader = (title, subtitle = '', actionHtml = '') => {
   return `
-    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 border-b border-slate-200/80">
+    <div class="mb-5 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 border-b border-slate-200/80">
       <div>
-        <h1 class="font-heading text-2xl font-bold tracking-tight text-slate-900">${title}</h1>
-        ${subtitle ? `<p class="text-sm text-slate-500 mt-1">${subtitle}</p>` : ''}
+        <h1 class="font-heading text-xl sm:text-2xl font-bold tracking-tight text-slate-900">${title}</h1>
+        ${subtitle ? `<p class="text-xs sm:text-sm text-slate-500 mt-1">${subtitle}</p>` : ''}
       </div>
-      ${actionHtml ? `<div class="flex items-center gap-2">${actionHtml}</div>` : ''}
+      ${actionHtml ? `<div class="flex items-center gap-2 shrink-0 w-full sm:w-auto flex-wrap sm:flex-nowrap">${actionHtml}</div>` : ''}
     </div>`;
 };
 

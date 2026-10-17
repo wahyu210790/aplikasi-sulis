@@ -5,9 +5,38 @@ namespace App\Http\Controllers;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Str;
 
 class SupplierController extends Controller
 {
+    /**
+     * Hanya owner dan finance yang boleh melakukan mutasi data supplier.
+     * Warehouse tidak boleh membuat, mengubah, atau menghapus supplier.
+     */
+    private function authorizeMutation(Request $request): ?Response
+    {
+        $user = $request->user();
+        if (!$user || !in_array($user->role, ['owner', 'finance'])) {
+            return response()->json(['message' => 'Forbidden'], Response::HTTP_FORBIDDEN);
+        }
+        return null;
+    }
+
+    /**
+     * Generate kode supplier unik. Prefix SUP- diikuti 6 karakter acak uppercase.
+     * Percobaan hingga 10 kali untuk menghindari collision.
+     */
+    private function generateUniqueCode(): string
+    {
+        for ($i = 0; $i < 10; $i++) {
+            $code = 'SUP-' . strtoupper(substr(uniqid(), -6));
+            if (!Supplier::where('code', $code)->exists()) {
+                return $code;
+            }
+        }
+        return 'SUP-' . strtoupper(Str::random(8));
+    }
+
     public function index(Request $request)
     {
         $query = Supplier::query();
@@ -30,6 +59,8 @@ class SupplierController extends Controller
 
     public function store(Request $request)
     {
+        if ($res = $this->authorizeMutation($request)) return $res;
+
         $data = $request->validate([
             'name'    => 'required|string|max:255',
             'code'    => 'nullable|string|max:100|unique:suppliers,code',
@@ -37,9 +68,12 @@ class SupplierController extends Controller
             'phone'   => 'nullable|string|max:50',
             'address' => 'nullable|string',
         ]);
+
+        // Auto-generate kode jika tidak disediakan
         if (empty($data['code'])) {
-            $data['code'] = 'SUP-' . strtoupper(substr(uniqid(), -6));
+            $data['code'] = $this->generateUniqueCode();
         }
+
         $supplier = Supplier::create($data);
         return response()->json($supplier, Response::HTTP_CREATED);
     }
@@ -51,6 +85,8 @@ class SupplierController extends Controller
 
     public function update(Request $request, $id)
     {
+        if ($res = $this->authorizeMutation($request)) return $res;
+
         $supplier = Supplier::findOrFail($id);
         $data = $request->validate([
             'name'    => 'sometimes|required|string|max:255',
@@ -63,8 +99,10 @@ class SupplierController extends Controller
         return response()->json($supplier);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        if ($res = $this->authorizeMutation($request)) return $res;
+
         $supplier = Supplier::findOrFail($id);
         $supplier->delete();
         return response()->json(null, Response::HTTP_NO_CONTENT);

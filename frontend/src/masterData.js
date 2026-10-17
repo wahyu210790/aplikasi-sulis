@@ -26,7 +26,7 @@ function renderTabs(activeTab) {
   const tabHtml = tabs.map(tab => {
     const isActive = tab.id === activeTab;
     return `
-      <button data-tab="${tab.id}" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+      <button data-tab="${tab.id}" class="px-3.5 sm:px-4 py-2.5 sm:py-2 text-xs font-semibold rounded-xl whitespace-nowrap shrink-0 min-h-[40px] transition-all ${
         isActive 
           ? 'bg-white text-blue-600 shadow-sm border border-slate-200/80' 
           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -36,7 +36,7 @@ function renderTabs(activeTab) {
   }).join('');
 
   return `
-    <div class="mb-6 bg-slate-200/50 p-1.5 rounded-2xl inline-flex items-center gap-1 border border-slate-200/60">
+    <div class="mb-6 bg-slate-200/50 p-1.5 rounded-2xl flex overflow-x-auto gap-1 border border-slate-200/60 no-scrollbar max-w-full">
       ${tabHtml}
     </div>`;
 }

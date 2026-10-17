@@ -33,7 +33,7 @@ function statCard(label, value, hint = '', badgeColor = 'bg-blue-50 text-blue-70
           <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">${label}</span>
           ${hint ? `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full border ${badgeColor}">${hint}</span>` : ''}
         </div>
-        <div class="font-heading text-2xl font-bold text-slate-900 tracking-tight">${value}</div>
+        <div class="font-heading text-lg sm:text-2xl font-bold text-slate-900 tracking-tight break-words mt-1">${value}</div>
       </div>
     </div>`;
 }
