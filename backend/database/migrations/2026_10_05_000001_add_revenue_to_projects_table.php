@@ -10,11 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('projects', 'revenue')) {
-            Schema::table('projects', function (Blueprint $table) {
-                $table->decimal('revenue', 15, 2)->default(0);
-            });
-        }
+        // No-op: `revenue` is already defined in `2026_10_04_165656_create_projects_table`.
     }
 
     /**
@@ -22,7 +18,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        // Do not drop `revenue`: the column is part of `create_projects_table`.
+        // No-op: `revenue` is owned by `2026_10_04_165656_create_projects_table`.
     }
 };
-?>

@@ -195,4 +195,30 @@ class ProductionHardeningTest extends TestCase
             app()->detectEnvironment(fn () => $originalEnv);
         }
     }
+
+    public function test_projects_revenue_column_has_single_source_of_truth_and_survives_rollback(): void
+    {
+        $addRevenueMigration = require database_path('migrations/2026_10_05_000001_add_revenue_to_projects_table.php');
+
+        $upQueries = \Illuminate\Support\Facades\DB::pretend(fn () => $addRevenueMigration->up());
+        $downQueries = \Illuminate\Support\Facades\DB::pretend(fn () => $addRevenueMigration->down());
+
+        $this->assertSame([], $upQueries, '2026_10_05_000001_add_revenue_to_projects_table::up() must not emit conflicting DDL');
+        $this->assertSame([], $downQueries, '2026_10_05_000001_add_revenue_to_projects_table::down() must not drop projects.revenue');
+        $this->assertTrue(\Illuminate\Support\Facades\Schema::hasColumn('projects', 'revenue'));
+
+        $owner = User::factory()->create(['role' => 'owner']);
+        $projectNullRevenue = Project::create([
+            'code' => 'PRJ-NULL-REV',
+            'name' => 'Proyek Tanpa Revenue Awal',
+            'revenue' => null,
+            'status' => 'active',
+        ]);
+        $this->assertNull($projectNullRevenue->fresh()->revenue);
+
+        $this->actingAs($owner, 'sanctum')
+            ->getJson("/api/v1/projects/{$projectNullRevenue->id}/profitability")
+            ->assertOk()
+            ->assertJsonPath('margin_percent', 0);
+    }
 }
