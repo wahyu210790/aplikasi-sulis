@@ -63,6 +63,7 @@ class InventoryTransactionController extends Controller
                 ['product_id' => $data['product_id']],
                 ['quantity' => 0, 'average_cost' => 0, 'total_value' => 0]
             );
+            $stock = InventoryStock::whereKey($stock->id)->lockForUpdate()->first();
             $oldQty = $stock->quantity;
             $oldAvg = $stock->average_cost;
             $newQty = $oldQty + $data['quantity'];
@@ -104,7 +105,7 @@ class InventoryTransactionController extends Controller
         }
         $userId = $request->user()->id;
         return DB::transaction(function () use ($data, $userId, $project) {
-            $stock = InventoryStock::where('product_id', $data['product_id'])->first();
+            $stock = InventoryStock::where('product_id', $data['product_id'])->lockForUpdate()->first();
             if (! $stock || $stock->quantity < $data['quantity']) {
                 return response()->json(['message' => 'Insufficient stock'], 400);
             }
@@ -151,7 +152,7 @@ class InventoryTransactionController extends Controller
         $data = $validator->validated();
         $userId = $request->user()->id;
         return DB::transaction(function () use ($data, $userId) {
-            $stock = InventoryStock::where('product_id', $data['product_id'])->first();
+            $stock = InventoryStock::where('product_id', $data['product_id'])->lockForUpdate()->first();
             if (! $stock || $stock->quantity < $data['quantity']) {
                 return response()->json(['message' => 'Insufficient stock'], 400);
             }
@@ -212,6 +213,7 @@ class InventoryTransactionController extends Controller
                 ['product_id' => $data['product_id']],
                 ['quantity' => 0, 'average_cost' => 0, 'total_value' => 0]
             );
+            $stock = InventoryStock::whereKey($stock->id)->lockForUpdate()->first();
             $oldQty = $stock->quantity;
             $oldAvg = $stock->average_cost;
             $newQty = $oldQty + $data['quantity'];
@@ -247,7 +249,7 @@ class InventoryTransactionController extends Controller
         $data = $validator->validated();
         $userId = $request->user()->id;
         return DB::transaction(function () use ($data, $userId) {
-            $stock = InventoryStock::where('product_id', $data['product_id'])->first();
+            $stock = InventoryStock::where('product_id', $data['product_id'])->lockForUpdate()->first();
             if (! $stock || $stock->quantity < $data['quantity']) {
                 return response()->json(['message' => 'Insufficient stock'], 400);
             }

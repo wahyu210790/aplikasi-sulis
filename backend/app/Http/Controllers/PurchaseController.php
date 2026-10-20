@@ -181,9 +181,14 @@ class PurchaseController extends Controller
         if ($purchase->status !== 'DRAFT') {
             return response()->json(['message' => 'Only DRAFT purchases can be confirmed.'], 422);
         }
-        DB::transaction(function () use ($purchase, $request) {
+        $alreadyProcessed = DB::transaction(function () use ($purchase, $request) {
             // lock row for update
             $purchase = Purchase::where('id', $purchase->id)->lockForUpdate()->first();
+            // Re-check status after acquiring the lock so concurrent confirm
+            // requests cannot add the same purchase to stock twice.
+            if ($purchase->status !== 'DRAFT') {
+                return true;
+            }
             foreach ($purchase->items as $item) {
                 InventoryService::recordPurchaseIn(
                     $item->product_id,
@@ -195,7 +200,11 @@ class PurchaseController extends Controller
             }
             $purchase->status = 'CONFIRMED';
             $purchase->save();
+            return false;
         });
+        if ($alreadyProcessed) {
+            return response()->json(['message' => 'Only DRAFT purchases can be confirmed.'], 422);
+        }
         $purchase = $purchase->fresh(); return response()->json($purchase->load(['supplier', 'items.product']));
     }
 
@@ -203,12 +212,21 @@ class PurchaseController extends Controller
     {
         $this->authorizePurchase();
         $purchase = Purchase::findOrFail($id);
-        if ($purchase->status !== 'DRAFT') {
+        // Lock the row and re-check status so a concurrent confirm cannot be
+        // overwritten to CANCELLED after stock has already been added.
+        $cancelled = DB::transaction(function () use ($purchase) {
+            $locked = Purchase::where('id', $purchase->id)->lockForUpdate()->first();
+            if ($locked->status !== 'DRAFT') {
+                return null;
+            }
+            $locked->status = 'CANCELLED';
+            $locked->save();
+            return $locked;
+        });
+        if (! $cancelled) {
             return response()->json(['message' => 'Only DRAFT purchases can be cancelled.'], 422);
         }
-        $purchase->status = 'CANCELLED';
-        $purchase->save();
-        return response()->json($purchase);
+        return response()->json($cancelled);
     }
 }
 ?>

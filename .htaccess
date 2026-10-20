@@ -1,0 +1,83 @@
+# ==============================================================================
+# PRODUCTION ROOT .HTACCESS — PT. BEST ENGINEER PERSADA INVENTORY SaaS
+# Target Server Path: /home/u860192084/domains/bestengineerpersada.com/public_html/app/.htaccess
+# Compatible with Apache 2.4+ and Hostinger LiteSpeed Web Server
+# ==============================================================================
+
+# Disable directory listing and MultiViews globally in this root
+Options -Indexes -MultiViews
+DirectoryIndex index.html index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # --------------------------------------------------------------------------
+    # 1. PRESERVE AUTHORIZATION & XSRF HEADERS (Sanctum Bearer Token Support)
+    # --------------------------------------------------------------------------
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # --------------------------------------------------------------------------
+    # 2. STRICT SECURITY & SOURCE CODE PROTECTION (Returns HTTP 403 Forbidden)
+    # --------------------------------------------------------------------------
+    # 2a. Block any hidden file or folder (.env, .git, .gitignore, .htaccess, .phpunit, etc.)
+    RewriteRule (^|/)\. - [F,L,NC]
+
+    # 2b. Block sensitive config, dependency manifests, documentation, and test scripts at any depth
+    RewriteRule (^|/)(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js|CLAUDE\.md|AGENTS\.md|README\.md|test_role\.php|.*_test\.js|e2e_browser_suite\.js)$ - [F,L,NC]
+
+    # 2c. Block direct HTTP access to internal directories
+    # Note: backend/public/index.php is NOT blocked here so internal API rewrite works,
+    # while direct browser access to /backend/public/* is blocked by Rule 2d below.
+    RewriteRule ^(backend/(app|bootstrap|config|database|resources|routes|storage|tests|vendor)|frontend/(src|node_modules)|node_modules|scratch|tmp-puppeteer|docs)(/|$) - [F,L,NC]
+
+    # 2d. Block direct external browser requests to /backend/* or /frontend/*
+    # Uses %{THE_REQUEST} which only matches the original HTTP request line from the client,
+    # never matching internal Apache/LiteSpeed rewrites!
+    RewriteCond %{THE_REQUEST} \s/+backend/ [NC,OR]
+    RewriteCond %{THE_REQUEST} \s/+frontend/ [NC]
+    RewriteRule ^ - [F,L]
+
+    # --------------------------------------------------------------------------
+    # 3. STOP INTERNAL REWRITE LOOP (Compatible with both Apache 2.4 & LiteSpeed)
+    # Once a request has been internally rewritten to backend/public/index.php
+    # or frontend/dist/*, stop processing immediately on the next pass.
+    # --------------------------------------------------------------------------
+    RewriteRule ^backend/public/index\.php$ - [L]
+    RewriteRule ^frontend/dist/ - [L]
+
+    # --------------------------------------------------------------------------
+    # 4. BACKEND LARAVEL API ROUTING (/api/* and /up healthcheck)
+    # Forwards all /api/... requests to Laravel's front controller while preserving
+    # the original REQUEST_URI, query string (QSA), and Authorization header.
+    # --------------------------------------------------------------------------
+    RewriteRule ^api(/.*)?$ backend/public/index.php [QSA,L]
+    RewriteRule ^up$ backend/public/index.php [QSA,L]
+
+    # --------------------------------------------------------------------------
+    # 5. FRONTEND STATIC ASSETS (Served from frontend/dist/)
+    # --------------------------------------------------------------------------
+    # Root path "/" serves the built SPA entry point
+    RewriteRule ^$ frontend/dist/index.html [L]
+
+    # If the requested path exists as a real file inside frontend/dist/, serve it
+    RewriteCond %{DOCUMENT_ROOT}/frontend/dist/$1 -f
+    RewriteRule ^(.+)$ frontend/dist/$1 [L]
+
+    # --------------------------------------------------------------------------
+    # 6. MISSING STATIC ASSETS -> TRUE 404 (Do NOT return index.html with 200)
+    # Prevents broken JS/CSS/image URLs from receiving text/html MIME responses.
+    # --------------------------------------------------------------------------
+    RewriteRule ^(assets/|.*\.(js|mjs|css|map|json|png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|eot)$) - [R=404,L,NC]
+
+    # --------------------------------------------------------------------------
+    # 7. SPA FALLBACK ROUTING
+    # Any remaining non-API route (e.g., /dashboard, /purchasing, /inventory)
+    # serves frontend/dist/index.html so client-side routing works on refresh.
+    # --------------------------------------------------------------------------
+    RewriteRule ^.*$ frontend/dist/index.html [L]
+</IfModule>

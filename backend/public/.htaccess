@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # Block direct browser requests to /backend/* when deployed inside a monorepo webroot
+    RewriteCond %{THE_REQUEST} \s/+backend/ [NC]
+    RewriteRule ^ - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

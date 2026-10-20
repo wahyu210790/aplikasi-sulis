@@ -53,6 +53,7 @@ class ProjectProfitabilityController extends Controller
     {
         $this->authorize($request);
         $user = $request->user();
+        $project = Project::findOrFail($projectId);
         $validator = Validator::make($request->all(), [
             'description' => 'required|string',
             'amount' => 'required|numeric|min:0',
@@ -63,7 +64,7 @@ class ProjectProfitabilityController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
         $expense = ProjectExpense::create([
-            'project_id' => $projectId,
+            'project_id' => $project->id,
             'description' => $request->description,
             'amount' => $request->amount,
             'expense_date' => $request->expense_date,

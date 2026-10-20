@@ -36,6 +36,7 @@ class InventoryService
                 ['product_id' => $productId],
                 ['quantity' => 0, 'average_cost' => 0, 'total_value' => 0]
             );
+            $stock = InventoryStock::whereKey($stock->id)->lockForUpdate()->first();
             $oldQty = $stock->quantity;
             $oldAvg = $stock->average_cost;
             $newQty = $oldQty + $quantity;
@@ -60,6 +61,7 @@ class InventoryService
                 ['product_id' => $productId],
                 ['quantity' => 0, 'average_cost' => 0, 'total_value' => 0]
             );
+            $stock = InventoryStock::whereKey($stock->id)->lockForUpdate()->first();
             $unitCost = $stock->average_cost > 0 ? $stock->average_cost : 0;
 
             // Update stock quantity and total value
@@ -91,6 +93,7 @@ class InventoryService
                 ['product_id' => $productId],
                 ['quantity' => 0, 'average_cost' => 0, 'total_value' => 0]
             );
+            $stock = InventoryStock::whereKey($stock->id)->lockForUpdate()->first();
 
             $oldQty = $stock->quantity;
             $oldAvg = $stock->average_cost;

@@ -14,6 +14,14 @@ export const formatPercent = (value) => {
   return `${num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}%`;
 };
 
+/** Format quantity with id-ID locale without trailing zeroes (e.g. 1.000 -> 1, 1.500 -> 1,5, 1250 -> 1.250) */
+export const formatQuantity = (value) => {
+  if (value === null || value === undefined) return '0';
+  const num = Number(value);
+  if (isNaN(num)) return '0';
+  return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(num);
+};
+
 export const formatDate = (dateStr) => {
   if (!dateStr) return '';
   const d = new Date(dateStr);

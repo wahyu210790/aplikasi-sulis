@@ -3,6 +3,7 @@
 import { apiClient } from './api.js';
 import { 
   formatRupiah, 
+  formatQuantity,
   renderPageHeader, 
   renderBadge, 
   renderLoadingState, 
@@ -307,7 +308,7 @@ async function renderPurchaseDetail(target, purchaseId) {
           ${it.product?.name || '-'}
           <span class="text-xs font-mono text-slate-400 block">${it.product?.code || ''}</span>
         </td>
-        <td class="px-5 py-3 text-sm font-mono text-right text-slate-700">${it.quantity}</td>
+        <td class="px-5 py-3 text-sm font-mono text-right text-slate-700">${formatQuantity(it.quantity)}</td>
         <td class="px-5 py-3 text-sm font-mono text-right text-slate-700">${formatRupiah(it.unit_cost)}</td>
         <td class="px-5 py-3 text-sm font-mono text-right font-medium text-slate-900">${formatRupiah(it.subtotal)}</td>
       </tr>`).join('');
@@ -398,10 +399,13 @@ async function cancelPurchase(target, purchaseId) {
 async function renderPurchaseForm(target) {
   target.innerHTML = renderLoadingState('Memuat data supplier & produk...');
   try {
-    const [suppliers, products] = await Promise.all([
-      apiClient.get('/suppliers'),
-      apiClient.get('/products')
+    const [suppliersResp, productsResp] = await Promise.all([
+      apiClient.get('/suppliers?per_page=100'),
+      apiClient.get('/products?per_page=100')
     ]);
+
+    const suppliers = Array.isArray(suppliersResp?.data) ? suppliersResp.data : (Array.isArray(suppliersResp) ? suppliersResp : []);
+    const products = Array.isArray(productsResp?.data) ? productsResp.data : (Array.isArray(productsResp) ? productsResp : []);
 
     const supplierOptions = suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     const productOptions = products.map(p => `<option value="${p.id}">${p.name} (${p.code})</option>`).join('');

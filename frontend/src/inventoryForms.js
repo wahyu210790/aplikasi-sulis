@@ -171,30 +171,27 @@ export async function renderInventoryForms(container) {
       formsWrapper.className = 'p-5';
 
       const titleHtml = `
-        <div class="mb-4">
+        <div class="mb-5">
           <h3 class="font-heading text-sm font-semibold text-slate-800">Form Transaksi Inventory</h3>
-          <p class="text-xs text-slate-500">Pencatatan barang masuk, penggunaan project, barang keluar, & penyesuaian stok</p>
+          <p class="text-xs text-slate-500">Pencatatan mutasi fisik gudang: penggunaan material project, barang keluar, & penyesuaian stok</p>
+        </div>
+        <!-- Banner Informasi Penyatuan Jalur Pembelian -->
+        <div class="mb-5 bg-blue-50/80 border border-blue-200/80 rounded-2xl p-4 flex items-start gap-3 text-slate-700">
+          <div class="p-2 bg-blue-600 text-white rounded-xl shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="flex-1 text-xs">
+            <h4 class="font-semibold text-blue-900 mb-0.5">Pencatatan Pembelian Barang Dari Supplier</h4>
+            <p class="text-slate-600 leading-relaxed">
+              Seluruh pembelian barang masuk dari supplier wajib dicatat melalui menu <a href="#/purchasing" class="font-semibold text-blue-600 hover:text-blue-800 underline">Purchasing</a> (Purchase Order). Stok barang akan bertambah secara otomatis dan tercatat rapi saat dokumen PO berstatus <strong>CONFIRMED</strong>.
+            </p>
+          </div>
         </div>`;
 
       const gridDiv = document.createElement('div');
-      gridDiv.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
-
-      // Purchase In
-      const purchaseDiv = document.createElement('div');
-      purchaseDiv.className = 'bg-slate-50/70 border border-slate-200/80 p-5 rounded-2xl shadow-card';
-      const purchaseFields = `
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">Produk</label>
-        ${productSelectHtml(products)}
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">Quantity</label>
-        <input type="number" name="quantity" min="1" placeholder="Quantity" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none w-full mb-3" required />
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">Harga Satuan (Unit Cost)</label>
-        <input type="number" step="0.01" name="unit_cost" min="0" placeholder="Unit Cost" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none w-full mb-3" required />
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">Tanggal Transaksi</label>
-        <input type="date" name="transaction_date" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none w-full mb-3" required />
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">Catatan</label>
-        <textarea name="notes" placeholder="Catatan (optional)" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none w-full mb-3"></textarea>`;
-      renderForm(purchaseDiv, 'Purchase In', purchaseFields, handlePurchaseIn);
-      gridDiv.appendChild(purchaseDiv);
+      gridDiv.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-5';
 
       // Project Usage
       const usageDiv = document.createElement('div');
