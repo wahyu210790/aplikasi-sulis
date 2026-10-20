@@ -146,4 +146,53 @@ class ProductionHardeningTest extends TestCase
         $this->postJson('/api/v1/auth/login', ['email' => 'someone@example.test', 'password' => 'wrong'])
             ->assertUnauthorized();
     }
+
+    public function test_inventory_stocks_product_id_has_unique_and_foreign_key_constraints(): void
+    {
+        $indexes = \Illuminate\Support\Facades\Schema::getIndexes('inventory_stocks');
+        $hasUniqueOnProductId = collect($indexes)->contains(function (array $index): bool {
+            return ! empty($index['unique']) && ($index['columns'] ?? []) === ['product_id'];
+        });
+        $this->assertTrue($hasUniqueOnProductId, 'Expected a database-level UNIQUE index on inventory_stocks.product_id');
+
+        $foreignKeys = \Illuminate\Support\Facades\Schema::getForeignKeys('inventory_stocks');
+        $hasFkToProducts = collect($foreignKeys)->contains(function (array $fk): bool {
+            return ($fk['columns'] ?? []) === ['product_id'] && ($fk['foreign_table'] ?? null) === 'products';
+        });
+        $this->assertTrue($hasFkToProducts, 'Expected a foreign key constraint from inventory_stocks.product_id to products.id');
+
+        $product = Product::factory()->create();
+        InventoryStock::create([
+            'product_id' => $product->id,
+            'quantity' => 5,
+            'average_cost' => 1000,
+            'total_value' => 5000,
+        ]);
+
+        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        \Illuminate\Support\Facades\DB::table('inventory_stocks')->insert([
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'average_cost' => 1000,
+            'total_value' => 1000,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    public function test_seeders_do_not_create_sample_users_in_production_environment(): void
+    {
+        $originalEnv = app()->environment();
+        try {
+            app()->detectEnvironment(fn () => 'production');
+            $this->assertTrue(app()->isProduction());
+
+            (new \Database\Seeders\DatabaseSeeder())->run();
+            (new \Database\Seeders\UserSeeder())->run();
+
+            $this->assertSame(0, User::count());
+        } finally {
+            app()->detectEnvironment(fn () => $originalEnv);
+        }
+    }
 }

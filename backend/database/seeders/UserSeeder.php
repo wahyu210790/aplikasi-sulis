@@ -12,6 +12,10 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->isProduction()) {
+            return;
+        }
+
         // Owner user
         \App\Models\User::factory()->create([
             'name' => 'Owner User',

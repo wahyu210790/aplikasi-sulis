@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('inventory_stocks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained('products')->unique();
+            $table->foreignId('product_id')->unique()->constrained('products');
             $table->unsignedBigInteger('quantity')->default(0);
             $table->decimal('average_cost', 15, 2)->default(0);
             $table->decimal('total_value', 15, 2)->default(0);

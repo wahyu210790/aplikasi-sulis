@@ -22,11 +22,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        if (Schema::hasColumn('projects', 'revenue')) {
-            Schema::table('projects', function (Blueprint $table) {
-                $table->dropColumn('revenue');
-            });
-        }
+        // Do not drop `revenue`: the column is part of `create_projects_table`.
     }
 };
 ?>
