@@ -36,3 +36,22 @@
     @apply bg-canvas text-ink font-sans antialiased;
   }
 }
+
+/* Printing a document (Barang Keluar / Pengembalian): only the element with class "print-area" is printed. */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    inset: 0 0 auto 0;
+  }
+}

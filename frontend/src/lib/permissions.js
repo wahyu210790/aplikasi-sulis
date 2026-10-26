@@ -13,6 +13,17 @@ const ACTIONS = {
   'products.import': ['owner', 'gudang'],
   'projects.view': ['owner', 'gudang', 'finance'],
   'projects.manage': ['owner', 'finance'],
+  // Fase 3 — stock in and out (B6)
+  'stock.view': ['owner', 'gudang', 'finance'],
+  'stock.out': ['owner', 'gudang'],
+  'stock.return': ['owner', 'gudang'],
+  'stock.reverse': ['owner'],
+  'stock.opening': ['owner', 'finance'],
+  'imports.view': ['owner', 'gudang', 'finance'],
+  'purchases.view': ['owner', 'gudang', 'finance'],
+  'purchases.manage': ['owner', 'finance'],
+  'purchases.receive': ['owner', 'gudang'],
+  'purchases.cancelReceived': ['owner'],
 };
 
 export function can(user, action) {

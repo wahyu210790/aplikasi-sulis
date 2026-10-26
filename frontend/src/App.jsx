@@ -17,11 +17,14 @@ const ProductDetailPage = lazy(() => import('./features/products/pages/ProductDe
 const ProductsPage = lazy(() => import('./features/products/pages/ProductsPage.jsx'));
 const ProjectDetailPage = lazy(() => import('./features/projects/pages/ProjectDetailPage.jsx'));
 const ProjectsPage = lazy(() => import('./features/projects/pages/ProjectsPage.jsx'));
+const StockOutFormPage = lazy(() => import('./features/stock/pages/StockOutFormPage.jsx'));
+const StockTransactionDetailPage = lazy(() => import('./features/stock/pages/StockTransactionDetailPage.jsx'));
+const StockTransactionsPage = lazy(() => import('./features/stock/pages/StockTransactionsPage.jsx'));
 const SuppliersPage = lazy(() => import('./features/master/pages/SuppliersPage.jsx'));
 const UnitsPage = lazy(() => import('./features/master/pages/UnitsPage.jsx'));
 const UsersPage = lazy(() => import('./features/users/pages/UsersPage.jsx'));
 
-function page(Page) {
+function page(Page, props = {}) {
   return (
     <Suspense
       fallback={
@@ -30,7 +33,7 @@ function page(Page) {
         </div>
       }
     >
-      <Page />
+      <Page {...props} />
     </Suspense>
   );
 }
@@ -58,6 +61,13 @@ export default function App() {
           <Route element={<RequireRole action="projects.view" />}>
             <Route path="proyek" element={page(ProjectsPage)} />
             <Route path="proyek/:id" element={page(ProjectDetailPage)} />
+          </Route>
+          <Route element={<RequireRole action="stock.view" />}>
+            <Route path="barang-keluar" element={page(StockTransactionsPage, { type: 'project_out' })} />
+            <Route path="barang-keluar/:id" element={page(StockTransactionDetailPage, { type: 'project_out' })} />
+          </Route>
+          <Route element={<RequireRole action="stock.out" />}>
+            <Route path="barang-keluar/baru" element={page(StockOutFormPage)} />
           </Route>
           <Route element={<RequireRole action="master.view" />}>
             <Route path="pengaturan/kategori" element={page(CategoriesPage)} />

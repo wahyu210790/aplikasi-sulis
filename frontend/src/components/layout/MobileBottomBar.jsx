@@ -3,7 +3,7 @@ import { useAuth } from '../../auth/useAuth.js';
 import { cn } from '../../lib/cn.js';
 import { bottomBarItems } from './NavItems.js';
 
-// Gudang role on mobile only. Hidden when no menu item has bottomBar: true (Fase 1 has none).
+// Gudang role on mobile only. Hidden when no menu item has bottomBar: true.
 export function MobileBottomBar() {
   const { user } = useAuth();
   const items = bottomBarItems(user);
@@ -22,7 +22,7 @@ export function MobileBottomBar() {
               }
             >
               <item.icon aria-hidden="true" className="h-5 w-5" />
-              {item.label}
+              {item.bottomLabel ?? item.label}
             </NavLink>
           </li>
         ))}
