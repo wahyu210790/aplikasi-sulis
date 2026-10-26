@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\PurchaseController;
 use App\Http\Controllers\Api\V1\StockOutController;
 use App\Http\Controllers\Api\V1\StockReturnController;
 use App\Http\Controllers\Api\V1\StockTransactionController;
+use App\Http\Controllers\Api\V1\StockTransactionReversalController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\UnitController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -29,6 +30,7 @@ Route::prefix('v1')->group(function () {
             Route::post('users', [UserController::class, 'store']);
             Route::put('users/{user}', [UserController::class, 'update']);
             Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword']);
+            Route::post('stock-transactions/{stockTransaction}/reverse', [StockTransactionReversalController::class, 'store']);
         });
 
         // Master data: categories, units, products, projects (B6). Gudang sees them without money keys (B7).
