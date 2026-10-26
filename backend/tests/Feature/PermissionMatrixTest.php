@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,6 +34,10 @@ class PermissionMatrixTest extends TestCase
         'GET api/v1/units' => ['owner', 'gudang', 'finance'],
         'POST api/v1/units' => ['owner', 'gudang'],
         'PUT api/v1/units/{unit}' => ['owner', 'gudang'],
+        'GET api/v1/products' => ['owner', 'gudang', 'finance'],
+        'GET api/v1/products/{product}' => ['owner', 'gudang', 'finance'],
+        'POST api/v1/products' => ['owner', 'gudang'],
+        'PUT api/v1/products/{product}' => ['owner', 'gudang'],
     ];
 
     private const ROLES = ['owner', 'gudang', 'finance'];
@@ -65,6 +70,7 @@ class PermissionMatrixTest extends TestCase
             '{user}' => (string) User::factory()->gudang()->create()->id,
             '{category}' => (string) Category::factory()->create()->id,
             '{unit}' => (string) Unit::factory()->create()->id,
+            '{product}' => (string) Product::factory()->create()->id,
         ];
 
         foreach (self::MATRIX as $key => $allowed) {
