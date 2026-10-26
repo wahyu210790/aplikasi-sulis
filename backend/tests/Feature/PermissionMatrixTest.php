@@ -47,6 +47,8 @@ class PermissionMatrixTest extends TestCase
         'GET api/v1/projects/{project}' => ['owner', 'gudang', 'finance'],
         'POST api/v1/projects' => ['owner', 'finance'],
         'PUT api/v1/projects/{project}' => ['owner', 'finance'],
+        'GET api/v1/imports/products/template' => ['owner', 'gudang'],
+        'POST api/v1/imports/products' => ['owner', 'gudang'],
     ];
 
     private const ROLES = ['owner', 'gudang', 'finance'];
@@ -90,7 +92,7 @@ class PermissionMatrixTest extends TestCase
 
             if ($allowed === 'public') {
                 $this->app['auth']->forgetGuards();
-                $status = $this->json($method, $url)->status();
+                $status = $this->json($method, $url)->getStatusCode();
                 $this->assertNotSame(401, $status, "{$key} must be public");
                 $this->assertNotSame(403, $status, "{$key} must be public");
 
@@ -102,7 +104,7 @@ class PermissionMatrixTest extends TestCase
                 $token = $user->createToken('spa')->plainTextToken;
                 $this->app['auth']->forgetGuards();
 
-                $status = $this->json($method, $url, [], ['Authorization' => 'Bearer '.$token])->status();
+                $status = $this->json($method, $url, [], ['Authorization' => 'Bearer '.$token])->getStatusCode();
 
                 if (in_array($role, $allowed, true)) {
                     $this->assertNotSame(403, $status, "{$key} should be allowed for {$role}");
@@ -113,7 +115,7 @@ class PermissionMatrixTest extends TestCase
             }
 
             $this->app['auth']->forgetGuards();
-            $this->assertSame(401, $this->json($method, $url)->status(), "{$key} must require login");
+            $this->assertSame(401, $this->json($method, $url)->getStatusCode(), "{$key} must require login");
         }
     }
 }

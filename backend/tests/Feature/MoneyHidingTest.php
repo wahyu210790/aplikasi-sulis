@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\AssertsNoMoneyKeys;
+use Tests\Concerns\BuildsXlsxFiles;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,7 @@ use Tests\TestCase;
 class MoneyHidingTest extends TestCase
 {
     use AssertsNoMoneyKeys;
+    use BuildsXlsxFiles;
     use RefreshDatabase;
 
     private Product $product;
@@ -75,6 +77,19 @@ class MoneyHidingTest extends TestCase
         $this->assertNoMoneyKeys($this->getJson('/api/v1/projects'));
         $this->assertNoMoneyKeys($this->getJson('/api/v1/projects?all=1'));
         $this->assertNoMoneyKeys($this->getJson("/api/v1/projects/{$project->id}"));
+    }
+
+    public function test_gudang_gets_no_money_keys_from_product_import(): void
+    {
+        Sanctum::actingAs(User::factory()->gudang()->create());
+        $file = $this->xlsxUpload([
+            ['sku', 'nama', 'kategori', 'satuan'],
+            ['KBL-001', 'Kabel A', 'Kabel', 'meter'],
+            ['PP-001', 'Pipa PVC', 'Pipa', 'batang'],
+        ]);
+
+        $this->assertNoMoneyKeys($this->post('/api/v1/imports/products', ['file' => $file], ['Accept' => 'application/json']));
+        $this->assertNoMoneyKeys($this->getJson('/api/v1/products'));
     }
 
     public function test_owner_and_finance_do_get_money_keys(): void

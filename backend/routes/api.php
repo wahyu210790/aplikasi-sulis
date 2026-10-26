@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\SupplierController;
@@ -41,6 +42,8 @@ Route::prefix('v1')->group(function () {
             Route::put('units/{unit}', [UnitController::class, 'update']);
             Route::post('products', [ProductController::class, 'store']);
             Route::put('products/{product}', [ProductController::class, 'update']);
+            Route::get('imports/products/template', [ImportController::class, 'productTemplate']);
+            Route::post('imports/products', [ImportController::class, 'products'])->middleware('throttle:imports');
         });
 
         // Suppliers, project create/update: Owner and Finance only (B6)
