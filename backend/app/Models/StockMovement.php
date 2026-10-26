@@ -62,6 +62,12 @@ class StockMovement extends Model
         return $this->belongsTo(StockTransaction::class);
     }
 
+    /** The purchase line a purchase_in came from (no FK: see the migration). */
+    public function purchaseItem(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseItem::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

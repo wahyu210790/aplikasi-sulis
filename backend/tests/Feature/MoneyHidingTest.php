@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Project;
+use App\Models\Purchase;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -90,6 +91,40 @@ class MoneyHidingTest extends TestCase
 
         $this->assertNoMoneyKeys($this->post('/api/v1/imports/products', ['file' => $file], ['Accept' => 'application/json']));
         $this->assertNoMoneyKeys($this->getJson('/api/v1/products'));
+    }
+
+    public function test_gudang_gets_no_money_keys_from_any_stock_endpoint(): void
+    {
+        $this->travelTo('2026-10-27 10:00:00');
+        $project = Project::factory()->create();
+        $first = Purchase::factory()->withItem($this->product, '10', 12000)->create();
+        $second = Purchase::factory()->withItem($this->product, '5', 13000)->create();
+        Sanctum::actingAs(User::factory()->gudang()->create());
+
+        $this->assertNoMoneyKeys($this->getJson('/api/v1/purchases'));
+        $this->assertNoMoneyKeys($this->getJson("/api/v1/purchases/{$first->id}"));
+        $this->assertNoMoneyKeys($this->postJson("/api/v1/purchases/{$first->id}/receive"));
+        $this->assertNoMoneyKeys($this->postJson("/api/v1/purchases/{$second->id}/receive"));
+
+        $body = [
+            'project_id' => $project->id,
+            'person_name' => 'Budi',
+            'transaction_date' => '2026-10-27',
+            'items' => [['product_id' => $this->product->id, 'qty' => '20']],
+        ];
+        $out = $this->postJson('/api/v1/stock-outs', $body);
+        $this->assertNoMoneyKeys($out);
+        $this->assertNoMoneyKeys($this->postJson('/api/v1/stock-returns', [...$body, 'items' => [['product_id' => $this->product->id, 'qty' => '5']]]));
+
+        $this->assertNoMoneyKeys($this->getJson('/api/v1/stock-transactions'));
+        $this->assertNoMoneyKeys($this->getJson('/api/v1/stock-transactions/'.$out->json('data.id')));
+        $this->assertNoMoneyKeys($this->getJson("/api/v1/projects/{$project->id}/issued-items"));
+        $this->assertNoMoneyKeys($this->getJson("/api/v1/products/{$this->product->id}/movements"));
+        $this->assertNoMoneyKeys($this->getJson('/api/v1/reports/movements'));
+        $this->assertNoMoneyKeys($this->getJson("/api/v1/products/{$this->product->id}"));
+
+        $this->getJson('/api/v1/reports/movements')->assertJsonCount(4, 'data');
+        $this->getJson("/api/v1/projects/{$project->id}/issued-items")->assertJsonPath('data.0.qty', '15.000');
     }
 
     public function test_owner_and_finance_do_get_money_keys(): void

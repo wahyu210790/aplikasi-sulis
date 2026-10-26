@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\OpeningStockController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\PurchaseController;
+use App\Http\Controllers\Api\V1\StockMovementController;
 use App\Http\Controllers\Api\V1\StockOutController;
 use App\Http\Controllers\Api\V1\StockReturnController;
 use App\Http\Controllers\Api\V1\StockTransactionController;
@@ -39,6 +40,8 @@ Route::prefix('v1')->group(function () {
             Route::get('units', [UnitController::class, 'index']);
             Route::get('products', [ProductController::class, 'index']);
             Route::get('products/{product}', [ProductController::class, 'show']);
+            Route::get('products/{product}/movements', [StockMovementController::class, 'product']);
+            Route::get('reports/movements', [StockMovementController::class, 'report']);
             Route::get('projects', [ProjectController::class, 'index']);
             Route::get('projects/{project}', [ProjectController::class, 'show']);
             Route::get('projects/{project}/issued-items', [StockReturnController::class, 'issuedItems']);

@@ -7,13 +7,22 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * One ledger row (docs/desain-v2.md B3.13). Money keys are ABSENT for Gudang (B7).
- * Load 'product.unit', 'project', 'creator' when they should be shown.
+ * One ledger row (docs/desain-v2.md B3.13, B9.2). Money keys are ABSENT for Gudang (B7).
+ * Load StockMovementResource::RELATIONS so product, project, document and user can be shown.
+ *
+ * document: the paper behind the movement, or null (opening stock, opname):
+ *   {"kind": "stock_transaction", "id": 12, "number": "BK-000012"} or {"kind": "purchase", "id": 3, "number": "PB-000003"}.
+ * A reversal points to the same document as the movement it cancels.
  *
  * @mixin StockMovement
  */
 class StockMovementResource extends JsonResource
 {
+    public const RELATIONS = [
+        'product.unit', 'project', 'creator', 'stockTransaction',
+        'purchaseItem.purchase', 'reverses.purchaseItem.purchase',
+    ];
+
     public function toArray(Request $request): array
     {
         $seeMoney = $request->user()->canSeeMoney();
@@ -37,11 +46,25 @@ class StockMovementResource extends JsonResource
             'project' => $this->whenLoaded('project', fn () => $this->project
                 ? ['id' => $this->project->id, 'code' => $this->project->code, 'name' => $this->project->name]
                 : null),
+            'document' => $this->document(),
+            'person_name' => $this->relationLoaded('stockTransaction') ? $this->stockTransaction?->person_name : null,
             'reverses_movement_id' => $this->reverses_movement_id,
             'movement_date' => $this->movement_date->toDateString(),
             'notes' => $this->notes,
             'created_by' => $this->whenLoaded('creator', fn () => ['id' => $this->creator->id, 'name' => $this->creator->name]),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
+    }
+
+    private function document(): ?array
+    {
+        if ($this->relationLoaded('stockTransaction') && $this->stockTransaction) {
+            return ['kind' => 'stock_transaction', 'id' => $this->stockTransaction->id, 'number' => $this->stockTransaction->number];
+        }
+
+        $source = $this->relationLoaded('reverses') && $this->reverses ? $this->reverses : $this->resource;
+        $purchase = $source->relationLoaded('purchaseItem') ? $source->purchaseItem?->purchase : null;
+
+        return $purchase ? ['kind' => 'purchase', 'id' => $purchase->id, 'number' => $purchase->number] : null;
     }
 }
