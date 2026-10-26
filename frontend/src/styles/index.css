@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* Design tokens — docs/desain-v2.md B12.6. Do not add colors outside this list. */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-line: #E2E8F0;
+  --color-ink: #0F172A;
+  --color-muted: #64748B;
+
+  --color-primary: #1D4ED8;
+  --color-primary-hover: #1E40AF;
+  --color-primary-soft: #EFF6FF;
+
+  --color-sidebar: #0B1220;
+  --color-sidebar-active: #1E293B;
+
+  --color-success: #047857;
+  --color-success-soft: #ECFDF5;
+  --color-warning: #B45309;
+  --color-warning-soft: #FFFBEB;
+  --color-danger: #B91C1C;
+  --color-danger-soft: #FEF2F2;
+  --color-info: #0369A1;
+  --color-info-soft: #F0F9FF;
+
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+}
