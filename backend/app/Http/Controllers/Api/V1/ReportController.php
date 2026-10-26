@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\MovementType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Report\CostHistoryRequest;
 use App\Http\Requests\Report\ProjectProfitReportRequest;
+use App\Http\Requests\Report\StockValueReportRequest;
+use App\Http\Resources\CostHistoryResource;
+use App\Http\Resources\StockValueResource;
 use App\Models\Product;
 use App\Models\Project;
+use App\Models\StockBalance;
+use App\Models\StockMovement;
 use App\Services\ProjectProfitService;
+use App\Support\ApiPaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -97,5 +105,63 @@ class ReportController extends Controller
         }
 
         return response()->json($body);
+    }
+
+    /**
+     * GET /reports/stock-value — per product: qty, average cost and stock value (paginated, by name),
+     * plus totals.stock_value over ALL products that match the filters. Owner/Finance.
+     */
+    public function stockValue(StockValueReportRequest $request): JsonResponse
+    {
+        $query = Product::query();
+        if ($search = $request->validated('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('sku', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+        if ($categoryId = $request->validated('category_id')) {
+            $query->where('category_id', $categoryId);
+        }
+        if ($request->validated('is_active') !== null) {
+            $query->where('is_active', (bool) $request->validated('is_active'));
+        }
+
+        $total = (int) StockBalance::query()->whereIn('product_id', (clone $query)->select('id'))->sum('stock_value');
+
+        $page = $query->with(['category', 'unit', 'stockBalance'])->orderBy('name')->orderBy('id')->paginate(ApiPaginator::perPage($request));
+        $body = ApiPaginator::respond($page, StockValueResource::class, $request)->getData(true);
+        $body['totals'] = ['stock_value' => $total];
+
+        return response()->json($body);
+    }
+
+    /** GET /reports/cost-history — purchase prices and the average cost after each (optional ?product_id=). Owner/Finance. */
+    public function costHistory(CostHistoryRequest $request): JsonResponse
+    {
+        return $this->costHistoryList($request, $request->validated('product_id'));
+    }
+
+    /** GET /products/{product}/cost-history — the same list for one product ("Riwayat Harga Modal"). Owner/Finance. */
+    public function productCostHistory(CostHistoryRequest $request, Product $product): JsonResponse
+    {
+        return $this->costHistoryList($request, $product->id);
+    }
+
+    private function costHistoryList(CostHistoryRequest $request, ?int $productId): JsonResponse
+    {
+        $query = StockMovement::query()->whereIn('type', [MovementType::Opening->value, MovementType::PurchaseIn->value]);
+        if ($productId) {
+            $query->where('product_id', $productId);
+        }
+        if ($from = $request->validated('date_from')) {
+            $query->whereDate('movement_date', '>=', $from);
+        }
+        if ($to = $request->validated('date_to')) {
+            $query->whereDate('movement_date', '<=', $to);
+        }
+
+        $query->with(CostHistoryResource::RELATIONS)->withExists('reversedBy as reversed')->orderBy('id', 'desc');
+
+        return ApiPaginator::respond($query->paginate(ApiPaginator::perPage($request)), CostHistoryResource::class, $request);
     }
 }

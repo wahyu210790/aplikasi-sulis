@@ -79,6 +79,9 @@ Route::prefix('v1')->group(function () {
             Route::put('projects/{project}/costs/{cost}', [ProjectCostController::class, 'update'])->scopeBindings();
             Route::delete('projects/{project}/costs/{cost}', [ProjectCostController::class, 'destroy'])->scopeBindings();
             Route::get('reports/project-profit', [ReportController::class, 'projectProfit']);
+            Route::get('reports/stock-value', [ReportController::class, 'stockValue']);
+            Route::get('reports/cost-history', [ReportController::class, 'costHistory']);
+            Route::get('products/{product}/cost-history', [ReportController::class, 'productCostHistory']);
             Route::post('opening-stocks', [OpeningStockController::class, 'store']);
             Route::get('imports/opening-stocks/template', [ImportController::class, 'openingStockTemplate']);
             Route::post('imports/opening-stocks', [ImportController::class, 'openingStocks'])->middleware('throttle:imports');
