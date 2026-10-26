@@ -3,11 +3,12 @@ const BASE_URL = '/api/v1';
 export const TOKEN_KEY = 'sulis_token';
 
 export class ApiError extends Error {
-  constructor(status, message, errors = {}) {
+  constructor(status, message, errors = {}, data = null) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
-    this.errors = errors; // { field: ['pesan', ...] } for 422 validation errors
+    this.errors = errors; // { field: ['pesan', ...] } for 422 validation errors; a list of row errors for imports
+    this.data = data; // the whole error response body (e.g. error_count for imports)
   }
 }
 
@@ -41,24 +42,28 @@ function buildUrl(path, query) {
   return url.pathname + url.search;
 }
 
-export async function api(path, { method = 'GET', body, query } = {}) {
+// body: a plain object (sent as JSON) or a FormData (file upload; the browser sets the Content-Type).
+// responseType: 'json' (default) or 'blob' (file download; returns a Blob when the request succeeds).
+export async function api(path, { method = 'GET', body, query, responseType = 'json' } = {}) {
   const headers = { Accept: 'application/json' };
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const isForm = body instanceof FormData;
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
 
   let response;
   try {
     response = await fetch(buildUrl(path, query), {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     });
   } catch {
     throw new ApiError(0, 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
   }
 
   if (response.status === 204) return null;
+  if (response.ok && responseType === 'blob') return response.blob();
 
   let payload;
   try {
@@ -73,7 +78,7 @@ export async function api(path, { method = 'GET', body, query } = {}) {
       if (unauthorizedHandler) unauthorizedHandler();
     }
     const message = payload?.message || 'Terjadi kesalahan. Silakan coba lagi.';
-    throw new ApiError(response.status, message, payload?.errors || {});
+    throw new ApiError(response.status, message, payload?.errors || {}, payload);
   }
 
   return payload;

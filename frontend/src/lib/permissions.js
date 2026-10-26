@@ -10,6 +10,7 @@ const ACTIONS = {
   'suppliers.manage': ['owner', 'finance'],
   'products.view': ['owner', 'gudang', 'finance'],
   'products.manage': ['owner', 'gudang'],
+  'products.import': ['owner', 'gudang'],
 };
 
 export function can(user, action) {

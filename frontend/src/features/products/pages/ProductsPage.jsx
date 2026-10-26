@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Package, Pencil, Plus, TriangleAlert } from 'lucide-react';
+import { FileSpreadsheet, Package, Pencil, Plus, TriangleAlert } from 'lucide-react';
 import { useAuth } from '../../../auth/useAuth.js';
 import { Badge } from '../../../components/ui/Badge.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
@@ -36,6 +36,7 @@ export default function ProductsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const canManage = can(user, 'products.manage');
+  const canImport = can(user, 'products.import');
   const showMoney = canSeeMoney(user);
   const [search, setSearch] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -107,11 +108,18 @@ export default function ProductsPage() {
         title="Barang"
         subtitle="Daftar barang di gudang beserta stoknya."
         actions={
-          canManage ? (
-            <Button leftIcon={Plus} onClick={() => setFormItem(null)}>
-              Tambah Barang
-            </Button>
-          ) : null
+          <>
+            {canImport ? (
+              <Button variant="secondary" leftIcon={FileSpreadsheet} onClick={() => navigate('/barang/impor')}>
+                Impor Excel
+              </Button>
+            ) : null}
+            {canManage ? (
+              <Button leftIcon={Plus} onClick={() => setFormItem(null)}>
+                Tambah Barang
+              </Button>
+            ) : null}
+          </>
         }
       />
 
