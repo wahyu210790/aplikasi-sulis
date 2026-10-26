@@ -12,12 +12,14 @@ use App\Http\Requests\Purchase\StorePurchaseRequest;
 use App\Http\Requests\Purchase\UpdatePurchaseRequest;
 use App\Http\Resources\PurchaseResource;
 use App\Models\Purchase;
+use App\Models\StockMovement;
 use App\Services\AuditLogger;
 use App\Services\MovementContext;
 use App\Services\StockLedger;
 use App\Support\ApiPaginator;
 use App\Support\AuditAction;
 use App\Support\Dec;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -153,7 +155,10 @@ class PurchaseController extends Controller
         return $this->respond($request, $purchase->fresh());
     }
 
-    /** B5.1 step 4. Draft -> batal (Finance/Owner). Received purchases: T3.04. */
+    /**
+     * B5.1 step 4. Draft -> batal (Finance/Owner).
+     * Diterima -> batal is Owner only: every purchase_in movement is reversed first (B4.4, with the value guard).
+     */
     public function cancel(CancelPurchaseRequest $request, Purchase $purchase): JsonResponse
     {
         DB::transaction(function () use ($request, $purchase) {
@@ -161,8 +166,23 @@ class PurchaseController extends Controller
             if ($purchase->status === PurchaseStatus::Batal) {
                 throw new BusinessRuleException('Pembelian ini sudah dibatalkan.');
             }
+
             if ($purchase->status === PurchaseStatus::Diterima) {
-                throw new BusinessRuleException('Pembelian yang sudah diterima belum bisa dibatalkan.');
+                if (! $request->user()->isOwner()) {
+                    throw new AuthorizationException;
+                }
+
+                $movements = StockMovement::query()
+                    ->where('type', MovementType::PurchaseIn)
+                    ->whereIn('purchase_item_id', $purchase->items()->pluck('id'))
+                    ->orderBy('id')
+                    ->get();
+
+                // Throws 422 "Tidak bisa dibatalkan: stok ... sudah terpakai." when the stock was already used.
+                $this->ledger->apply(
+                    $movements->map(fn (StockMovement $movement) => ['movement' => $movement])->all(),
+                    new MovementContext(MovementType::Reversal, now()->toDateString(), $request->user()->id, notes: "Pembatalan pembelian {$purchase->number}: {$request->validated('reason')}"),
+                );
             }
 
             $this->markCancelled($request, $purchase);
