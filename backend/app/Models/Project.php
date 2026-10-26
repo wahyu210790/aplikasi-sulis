@@ -7,6 +7,7 @@ use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /** Project (docs/desain-v2.md B3.8). contract_value is money: hidden from Gudang (B7). Never deleted: use status batal. */
 class Project extends Model
@@ -32,5 +33,11 @@ class Project extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** Other costs (B3.9), e.g. labour or rent. Material cost is NOT stored here: it comes from the ledger (B4.6). */
+    public function costs(): HasMany
+    {
+        return $this->hasMany(ProjectCost::class);
     }
 }

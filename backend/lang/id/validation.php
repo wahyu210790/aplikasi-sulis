@@ -123,5 +123,8 @@ return [
         'type' => 'jenis',
         'date_from' => 'tanggal awal',
         'date_to' => 'tanggal akhir',
+        'cost_date' => 'tanggal biaya',
+        'description' => 'keterangan',
+        'amount' => 'jumlah biaya',
     ],
 ];

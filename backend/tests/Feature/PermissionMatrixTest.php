@@ -6,6 +6,7 @@ use App\Enums\StockTransactionType;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Project;
+use App\Models\ProjectCost;
 use App\Models\Purchase;
 use App\Models\StockTransaction;
 use App\Models\Supplier;
@@ -72,17 +73,25 @@ class PermissionMatrixTest extends TestCase
         'POST api/v1/stock-transactions/{stockTransaction}/reverse' => ['owner'],
         'GET api/v1/products/{product}/movements' => ['owner', 'gudang', 'finance'],
         'GET api/v1/reports/movements' => ['owner', 'gudang', 'finance'],
+        'GET api/v1/projects/{project}/costs' => ['owner', 'finance'],
+        'POST api/v1/projects/{project}/costs' => ['owner', 'finance'],
+        'PUT api/v1/projects/{project}/costs/{cost}' => ['owner', 'finance'],
+        'DELETE api/v1/projects/{project}/costs/{cost}' => ['owner', 'finance'],
     ];
 
     protected function routeIds(): array
     {
+        // {project} and {cost} must match: cost routes use scoped bindings (a cost of another project is 404).
+        $cost = ProjectCost::factory()->create();
+
         return [
             '{user}' => (string) User::factory()->gudang()->create()->id,
             '{category}' => (string) Category::factory()->create()->id,
             '{unit}' => (string) Unit::factory()->create()->id,
             '{product}' => (string) Product::factory()->create()->id,
             '{supplier}' => (string) Supplier::factory()->create()->id,
-            '{project}' => (string) Project::factory()->create()->id,
+            '{project}' => (string) $cost->project_id,
+            '{cost}' => (string) $cost->id,
             '{purchase}' => (string) Purchase::factory()->withItem(Product::factory()->create(), '1', 1000)->create()->id,
             // A document header without lines is enough for the permission check.
             '{stockTransaction}' => (string) StockTransaction::create([

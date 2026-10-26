@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\OpeningStockController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProjectController;
+use App\Http\Controllers\Api\V1\ProjectCostController;
 use App\Http\Controllers\Api\V1\PurchaseController;
 use App\Http\Controllers\Api\V1\StockMovementController;
 use App\Http\Controllers\Api\V1\StockOutController;
@@ -64,13 +65,17 @@ Route::prefix('v1')->group(function () {
             Route::post('stock-returns', [StockReturnController::class, 'store']);
         });
 
-        // Suppliers, project create/update, opening stock, purchase drafts: Owner and Finance only (B6)
+        // Suppliers, project create/update, project costs, opening stock, purchase drafts: Owner and Finance only (B6)
         Route::middleware('role:owner,finance')->group(function () {
             Route::get('suppliers', [SupplierController::class, 'index']);
             Route::post('suppliers', [SupplierController::class, 'store']);
             Route::put('suppliers/{supplier}', [SupplierController::class, 'update']);
             Route::post('projects', [ProjectController::class, 'store']);
             Route::put('projects/{project}', [ProjectController::class, 'update']);
+            Route::get('projects/{project}/costs', [ProjectCostController::class, 'index']);
+            Route::post('projects/{project}/costs', [ProjectCostController::class, 'store']);
+            Route::put('projects/{project}/costs/{cost}', [ProjectCostController::class, 'update'])->scopeBindings();
+            Route::delete('projects/{project}/costs/{cost}', [ProjectCostController::class, 'destroy'])->scopeBindings();
             Route::post('opening-stocks', [OpeningStockController::class, 'store']);
             Route::get('imports/opening-stocks/template', [ImportController::class, 'openingStockTemplate']);
             Route::post('imports/opening-stocks', [ImportController::class, 'openingStocks'])->middleware('throttle:imports');
