@@ -17,6 +17,9 @@ const ProductDetailPage = lazy(() => import('./features/products/pages/ProductDe
 const ProductsPage = lazy(() => import('./features/products/pages/ProductsPage.jsx'));
 const ProjectDetailPage = lazy(() => import('./features/projects/pages/ProjectDetailPage.jsx'));
 const ProjectsPage = lazy(() => import('./features/projects/pages/ProjectsPage.jsx'));
+const PurchaseDetailPage = lazy(() => import('./features/purchases/pages/PurchaseDetailPage.jsx'));
+const PurchaseFormPage = lazy(() => import('./features/purchases/pages/PurchaseFormPage.jsx'));
+const PurchasesPage = lazy(() => import('./features/purchases/pages/PurchasesPage.jsx'));
 const ReturnFormPage = lazy(() => import('./features/stock/pages/ReturnFormPage.jsx'));
 const StockOutFormPage = lazy(() => import('./features/stock/pages/StockOutFormPage.jsx'));
 const StockTransactionDetailPage = lazy(() => import('./features/stock/pages/StockTransactionDetailPage.jsx'));
@@ -74,6 +77,14 @@ export default function App() {
           </Route>
           <Route element={<RequireRole action="stock.return" />}>
             <Route path="pengembalian/baru" element={page(ReturnFormPage)} />
+          </Route>
+          <Route element={<RequireRole action="purchases.view" />}>
+            <Route path="pembelian" element={page(PurchasesPage)} />
+            <Route path="pembelian/:id" element={page(PurchaseDetailPage)} />
+          </Route>
+          <Route element={<RequireRole action="purchases.manage" />}>
+            <Route path="pembelian/baru" element={page(PurchaseFormPage)} />
+            <Route path="pembelian/:id/ubah" element={page(PurchaseFormPage)} />
           </Route>
           <Route element={<RequireRole action="master.view" />}>
             <Route path="pengaturan/kategori" element={page(CategoriesPage)} />
