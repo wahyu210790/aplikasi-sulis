@@ -7,6 +7,8 @@ use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\AuditLogger;
+use App\Support\AuditAction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,11 +17,15 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly AuditLogger $audit) {}
+
     public function login(LoginRequest $request): JsonResponse
     {
         $user = User::where('email', $request->input('email'))->first();
 
         if (! $user || ! Hash::check($request->input('password'), $user->password)) {
+            $this->audit->log(AuditAction::AUTH_LOGIN_FAILED, null, 'Percobaan masuk gagal untuk email '.$request->input('email'));
+
             throw ValidationException::withMessages(['email' => ['Email atau password salah.']]);
         }
 
@@ -33,6 +39,7 @@ class AuthController extends Controller
         $token = $user->createToken('spa', ['*'], $expiresAt);
 
         $user->forceFill(['last_login_at' => now()])->save();
+        $this->audit->log(AuditAction::AUTH_LOGIN, $user, "{$user->name} masuk ke aplikasi", actor: $user);
 
         return response()->json([
             'data' => [
@@ -45,7 +52,9 @@ class AuthController extends Controller
 
     public function logout(Request $request): Response
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
+        $this->audit->log(AuditAction::AUTH_LOGOUT, $user, "{$user->name} keluar dari aplikasi");
 
         return response()->noContent();
     }
@@ -62,6 +71,7 @@ class AuthController extends Controller
 
         $user->forceFill(['password' => $request->input('password')])->save();
         $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+        $this->audit->log(AuditAction::AUTH_PASSWORD_CHANGED, $user, "{$user->name} mengganti password");
 
         return response()->noContent();
     }
