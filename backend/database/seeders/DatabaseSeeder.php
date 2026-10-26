@@ -2,16 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
-     * Seed the application's database.
+     * LOCAL DEVELOPMENT ONLY. Never creates anything in production.
+     * Password for all demo users: Password123
      */
     public function run(): void
     {
@@ -19,11 +18,17 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        // User::factory(10)->create();
+        $users = [
+            ['name' => 'Owner Demo', 'email' => 'owner@sulis.test', 'role' => Role::Owner],
+            ['name' => 'Gudang Demo', 'email' => 'gudang@sulis.test', 'role' => Role::Gudang],
+            ['name' => 'Finance Demo', 'email' => 'finance@sulis.test', 'role' => Role::Finance],
+        ];
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        foreach ($users as $user) {
+            User::updateOrCreate(
+                ['email' => $user['email']],
+                ['name' => $user['name'], 'role' => $user['role'], 'password' => 'Password123', 'is_active' => true],
+            );
+        }
     }
 }
