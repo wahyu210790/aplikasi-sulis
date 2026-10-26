@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\OpeningStockController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProjectController;
+use App\Http\Controllers\Api\V1\PurchaseController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\UnitController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -35,6 +36,8 @@ Route::prefix('v1')->group(function () {
             Route::get('products/{product}', [ProductController::class, 'show']);
             Route::get('projects', [ProjectController::class, 'index']);
             Route::get('projects/{project}', [ProjectController::class, 'show']);
+            Route::get('purchases', [PurchaseController::class, 'index']);
+            Route::get('purchases/{purchase}', [PurchaseController::class, 'show']);
         });
         Route::middleware('role:owner,gudang')->group(function () {
             Route::post('categories', [CategoryController::class, 'store']);
@@ -45,9 +48,10 @@ Route::prefix('v1')->group(function () {
             Route::put('products/{product}', [ProductController::class, 'update']);
             Route::get('imports/products/template', [ImportController::class, 'productTemplate']);
             Route::post('imports/products', [ImportController::class, 'products'])->middleware('throttle:imports');
+            Route::post('purchases/{purchase}/receive', [PurchaseController::class, 'receive']);
         });
 
-        // Suppliers, project create/update, opening stock: Owner and Finance only (B6)
+        // Suppliers, project create/update, opening stock, purchase drafts: Owner and Finance only (B6)
         Route::middleware('role:owner,finance')->group(function () {
             Route::get('suppliers', [SupplierController::class, 'index']);
             Route::post('suppliers', [SupplierController::class, 'store']);
@@ -57,6 +61,10 @@ Route::prefix('v1')->group(function () {
             Route::post('opening-stocks', [OpeningStockController::class, 'store']);
             Route::get('imports/opening-stocks/template', [ImportController::class, 'openingStockTemplate']);
             Route::post('imports/opening-stocks', [ImportController::class, 'openingStocks'])->middleware('throttle:imports');
+            Route::post('purchases', [PurchaseController::class, 'store']);
+            Route::put('purchases/{purchase}', [PurchaseController::class, 'update']);
+            Route::delete('purchases/{purchase}', [PurchaseController::class, 'destroy']);
+            Route::post('purchases/{purchase}/cancel', [PurchaseController::class, 'cancel']);
         });
     });
 });

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Project;
+use App\Models\Purchase;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
@@ -54,6 +55,13 @@ class PermissionMatrixTest extends TestCase
         'POST api/v1/opening-stocks' => ['owner', 'finance'],
         'GET api/v1/imports/opening-stocks/template' => ['owner', 'finance'],
         'POST api/v1/imports/opening-stocks' => ['owner', 'finance'],
+        'GET api/v1/purchases' => ['owner', 'gudang', 'finance'],
+        'GET api/v1/purchases/{purchase}' => ['owner', 'gudang', 'finance'],
+        'POST api/v1/purchases' => ['owner', 'finance'],
+        'PUT api/v1/purchases/{purchase}' => ['owner', 'finance'],
+        'DELETE api/v1/purchases/{purchase}' => ['owner', 'finance'],
+        'POST api/v1/purchases/{purchase}/receive' => ['owner', 'gudang'],
+        'POST api/v1/purchases/{purchase}/cancel' => ['owner', 'finance'],
     ];
 
     protected function routeIds(): array
@@ -65,6 +73,7 @@ class PermissionMatrixTest extends TestCase
             '{product}' => (string) Product::factory()->create()->id,
             '{supplier}' => (string) Supplier::factory()->create()->id,
             '{project}' => (string) Project::factory()->create()->id,
+            '{purchase}' => (string) Purchase::factory()->withItem(Product::factory()->create(), '1', 1000)->create()->id,
         ];
     }
 }
