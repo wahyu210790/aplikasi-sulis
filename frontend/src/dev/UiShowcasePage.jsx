@@ -17,6 +17,7 @@ import { Card } from '../components/ui/Card.jsx';
 import { Money } from '../components/ui/Money.jsx';
 import { Qty } from '../components/ui/Qty.jsx';
 import { ROLE_OPTIONS } from '../lib/constants.js';
+import UiShowcasePart2 from './UiShowcasePart2.jsx';
 
 // DEV ONLY page (route /_ui exists only in `npm run dev`). Shows every UI component for visual review.
 export default function UiShowcasePage() {
@@ -95,6 +96,7 @@ export default function UiShowcasePage() {
           <div><dt className="text-muted">Qty</dt><dd><Qty value="12.500" unit="m" /></dd></div>
         </dl>
       </Card>
+      <UiShowcasePart2 />
     </main>
   );
 }
