@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ImportController;
+use App\Http\Controllers\Api\V1\OpeningStockController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\SupplierController;
@@ -46,13 +47,16 @@ Route::prefix('v1')->group(function () {
             Route::post('imports/products', [ImportController::class, 'products'])->middleware('throttle:imports');
         });
 
-        // Suppliers, project create/update: Owner and Finance only (B6)
+        // Suppliers, project create/update, opening stock: Owner and Finance only (B6)
         Route::middleware('role:owner,finance')->group(function () {
             Route::get('suppliers', [SupplierController::class, 'index']);
             Route::post('suppliers', [SupplierController::class, 'store']);
             Route::put('suppliers/{supplier}', [SupplierController::class, 'update']);
             Route::post('projects', [ProjectController::class, 'store']);
             Route::put('projects/{project}', [ProjectController::class, 'update']);
+            Route::post('opening-stocks', [OpeningStockController::class, 'store']);
+            Route::get('imports/opening-stocks/template', [ImportController::class, 'openingStockTemplate']);
+            Route::post('imports/opening-stocks', [ImportController::class, 'openingStocks'])->middleware('throttle:imports');
         });
     });
 });
