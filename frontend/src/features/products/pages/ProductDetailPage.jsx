@@ -5,17 +5,72 @@ import { useAuth } from '../../../auth/useAuth.js';
 import { Badge } from '../../../components/ui/Badge.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
+import { DateInput } from '../../../components/ui/DateInput.jsx';
 import { EmptyState } from '../../../components/ui/EmptyState.jsx';
 import { ErrorState } from '../../../components/ui/ErrorState.jsx';
+import { FilterBar } from '../../../components/ui/FilterBar.jsx';
 import { PageHeader } from '../../../components/ui/PageHeader.jsx';
+import { Pagination } from '../../../components/ui/Pagination.jsx';
+import { Select } from '../../../components/ui/Select.jsx';
 import { Spinner } from '../../../components/ui/Spinner.jsx';
 import { StatCard } from '../../../components/ui/StatCard.jsx';
 import { StatusBadge } from '../../../components/ui/StatusBadge.jsx';
 import { Tabs } from '../../../components/ui/Tabs.jsx';
+import { MOVEMENT_TYPES } from '../../../lib/constants.js';
 import { formatQty, formatRupiah } from '../../../lib/format.js';
 import { can, canSeeMoney } from '../../../lib/permissions.js';
+import { useProductMovements } from '../../stock/api.js';
+import { MovementsTable } from '../../stock/components/MovementsTable.jsx';
 import { useProduct } from '../api.js';
 import { ProductFormModal } from '../components/ProductFormModal.jsx';
+
+const TYPE_FILTER = [{ value: '', label: 'Semua jenis' }, ...Object.entries(MOVEMENT_TYPES).map(([value, t]) => ({ value, label: t.label }))];
+
+// "Riwayat" tab: the product's stock ledger, newest first.
+function MovementHistory({ productId, unit, showMoney }) {
+  const [type, setType] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [page, setPage] = useState(1);
+  const movements = useProductMovements(productId, { type, date_from: dateFrom, date_to: dateTo, page, per_page: 20 });
+
+  function changeFilter(setter) {
+    return (value) => {
+      setter(value);
+      setPage(1);
+    };
+  }
+
+  return (
+    <>
+      <FilterBar>
+        <div className="w-full sm:w-52">
+          <Select value={type} onChange={changeFilter(setType)} options={TYPE_FILTER} />
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+          <DateInput value={dateFrom} onChange={changeFilter(setDateFrom)} aria-label="Dari tanggal" className="sm:w-40" />
+          <DateInput value={dateTo} onChange={changeFilter(setDateTo)} aria-label="Sampai tanggal" className="sm:w-40" />
+        </div>
+      </FilterBar>
+      {movements.isError ? (
+        <div className="rounded-card border border-line bg-surface shadow-sm">
+          <ErrorState message={movements.error.message} onRetry={() => movements.refetch()} />
+        </div>
+      ) : (
+        <>
+          <MovementsTable
+            rows={movements.data?.data ?? []}
+            loading={movements.isLoading}
+            unit={unit}
+            showMoney={showMoney}
+            filtered={Boolean(type || dateFrom || dateTo)}
+          />
+          <Pagination meta={movements.data?.meta} onPageChange={setPage} />
+        </>
+      )}
+    </>
+  );
+}
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -131,19 +186,17 @@ export default function ProductDetailPage() {
 
       <div className="mt-6">
         <Tabs tabs={tabs} value={tab} onChange={setTab} />
-        <div className="mt-4 rounded-card border border-line bg-surface shadow-sm">
+        <div className="mt-4">
           {tab === 'history' ? (
-            <EmptyState
-              icon={History}
-              title="Belum ada riwayat stok"
-              description="Riwayat barang masuk, keluar, dan penyesuaian akan tampil di sini setelah fitur transaksi stok tersedia."
-            />
+            <MovementHistory productId={item.id} unit={unit} showMoney={showMoney} />
           ) : (
-            <EmptyState
-              icon={Wallet}
-              title="Belum ada riwayat harga modal"
-              description="Perubahan harga modal dari setiap pembelian akan tampil di sini setelah fitur pembelian tersedia."
-            />
+            <div className="rounded-card border border-line bg-surface shadow-sm">
+              <EmptyState
+                icon={Wallet}
+                title="Riwayat harga modal belum tersedia"
+                description="Perubahan harga modal per pembelian akan tampil di sini bersama laporan harga modal. Sementara itu, lihat kolom Harga modal setelah di tab Riwayat."
+              />
+            </div>
           )}
         </div>
       </div>

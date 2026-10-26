@@ -13,6 +13,7 @@ import DashboardPage from './features/dashboard/pages/DashboardPage.jsx';
 const AccountPage = lazy(() => import('./features/account/pages/AccountPage.jsx'));
 const CategoriesPage = lazy(() => import('./features/master/pages/CategoriesPage.jsx'));
 const ImportProductsPage = lazy(() => import('./features/imports/pages/ImportProductsPage.jsx'));
+const OpeningStockPage = lazy(() => import('./features/stock/pages/OpeningStockPage.jsx'));
 const ProductDetailPage = lazy(() => import('./features/products/pages/ProductDetailPage.jsx'));
 const ProductsPage = lazy(() => import('./features/products/pages/ProductsPage.jsx'));
 const ProjectDetailPage = lazy(() => import('./features/projects/pages/ProjectDetailPage.jsx'));
@@ -59,7 +60,7 @@ export default function App() {
             <Route path="barang" element={page(ProductsPage)} />
             <Route path="barang/:id" element={page(ProductDetailPage)} />
           </Route>
-          <Route element={<RequireRole action="products.import" />}>
+          <Route element={<RequireRole action="imports.view" />}>
             <Route path="barang/impor" element={page(ImportProductsPage)} />
           </Route>
           <Route element={<RequireRole action="projects.view" />}>
@@ -74,6 +75,9 @@ export default function App() {
           </Route>
           <Route element={<RequireRole action="stock.out" />}>
             <Route path="barang-keluar/baru" element={page(StockOutFormPage)} />
+          </Route>
+          <Route element={<RequireRole action="stock.opening" />}>
+            <Route path="stok-awal" element={page(OpeningStockPage)} />
           </Route>
           <Route element={<RequireRole action="stock.return" />}>
             <Route path="pengembalian/baru" element={page(ReturnFormPage)} />

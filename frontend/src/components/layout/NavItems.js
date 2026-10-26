@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, Package, PackageMinus, Ruler, ShoppingCart, Tags, Truck, Undo2, Users } from 'lucide-react';
+import { FolderKanban, LayoutDashboard, Package, PackageMinus, PackagePlus, Ruler, ShoppingCart, Tags, Truck, Undo2, Users } from 'lucide-react';
 import { can } from '../../lib/permissions.js';
 
 // Sidebar / drawer menu — docs/desain-v2.md B12.5. Later tasks ADD items to the right group.
@@ -15,6 +15,7 @@ export const NAV_GROUPS = [
       { to: '/pembelian', label: 'Pembelian', icon: ShoppingCart, action: 'purchases.view' },
       { to: '/barang-keluar', label: 'Barang Keluar', icon: PackageMinus, action: 'stock.view', bottomBar: true },
       { to: '/pengembalian', label: 'Pengembalian', icon: Undo2, action: 'stock.view', bottomBar: true },
+      { to: '/stok-awal', label: 'Stok Awal', icon: PackagePlus, action: 'stock.opening' },
     ],
   },
   {
