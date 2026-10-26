@@ -1,7 +1,8 @@
 import { Routes, Route, Link } from 'react-router';
 import { formatDateTime, formatRupiah } from './lib/format.js';
+import UiShowcasePage from './dev/UiShowcasePage.jsx';
 
-// TEMPORARY page for T1.07 only. T1.10 replaces this whole file.
+// TEMPORARY page for T1.07–T1.09 only. T1.10 replaces this whole file.
 function FoundationPage() {
   return (
     <main className="mx-auto max-w-xl p-6">
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<FoundationPage />} />
+      {import.meta.env.DEV ? <Route path="/_ui" element={<UiShowcasePage />} /> : null}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
