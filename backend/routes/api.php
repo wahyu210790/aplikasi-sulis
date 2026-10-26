@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\UnitController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,13 @@ Route::prefix('v1')->group(function () {
             Route::put('units/{unit}', [UnitController::class, 'update']);
             Route::post('products', [ProductController::class, 'store']);
             Route::put('products/{product}', [ProductController::class, 'update']);
+        });
+
+        // Suppliers: Owner and Finance only (B6)
+        Route::middleware('role:owner,finance')->group(function () {
+            Route::get('suppliers', [SupplierController::class, 'index']);
+            Route::post('suppliers', [SupplierController::class, 'store']);
+            Route::put('suppliers/{supplier}', [SupplierController::class, 'update']);
         });
     });
 });
