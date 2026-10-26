@@ -16,6 +16,7 @@ trait AssertsNoMoneyKeys
         'value_change', 'unit_cost', 'value_after', 'avg_cost_after',
         'total_value', 'unit_price', 'line_total', 'value',
         'contract_value', 'amount', 'material_cost', 'other_costs', 'profit', 'margin_percent',
+        'net_value',
     ];
 
     protected function assertNoMoneyKeys(TestResponse $response): void

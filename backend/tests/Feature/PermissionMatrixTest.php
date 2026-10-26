@@ -77,6 +77,8 @@ class PermissionMatrixTest extends TestCase
         'POST api/v1/projects/{project}/costs' => ['owner', 'finance'],
         'PUT api/v1/projects/{project}/costs/{cost}' => ['owner', 'finance'],
         'DELETE api/v1/projects/{project}/costs/{cost}' => ['owner', 'finance'],
+        'GET api/v1/reports/project-profit' => ['owner', 'finance'],
+        'GET api/v1/reports/projects/{project}/materials' => ['owner', 'gudang', 'finance'],
     ];
 
     protected function routeIds(): array

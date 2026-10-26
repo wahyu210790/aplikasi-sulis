@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\ProjectCostController;
 use App\Http\Controllers\Api\V1\PurchaseController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\StockMovementController;
 use App\Http\Controllers\Api\V1\StockOutController;
 use App\Http\Controllers\Api\V1\StockReturnController;
@@ -43,6 +44,7 @@ Route::prefix('v1')->group(function () {
             Route::get('products/{product}', [ProductController::class, 'show']);
             Route::get('products/{product}/movements', [StockMovementController::class, 'product']);
             Route::get('reports/movements', [StockMovementController::class, 'report']);
+            Route::get('reports/projects/{project}/materials', [ReportController::class, 'projectMaterials']);
             Route::get('projects', [ProjectController::class, 'index']);
             Route::get('projects/{project}', [ProjectController::class, 'show']);
             Route::get('projects/{project}/issued-items', [StockReturnController::class, 'issuedItems']);
@@ -76,6 +78,7 @@ Route::prefix('v1')->group(function () {
             Route::post('projects/{project}/costs', [ProjectCostController::class, 'store']);
             Route::put('projects/{project}/costs/{cost}', [ProjectCostController::class, 'update'])->scopeBindings();
             Route::delete('projects/{project}/costs/{cost}', [ProjectCostController::class, 'destroy'])->scopeBindings();
+            Route::get('reports/project-profit', [ReportController::class, 'projectProfit']);
             Route::post('opening-stocks', [OpeningStockController::class, 'store']);
             Route::get('imports/opening-stocks/template', [ImportController::class, 'openingStockTemplate']);
             Route::post('imports/opening-stocks', [ImportController::class, 'openingStocks'])->middleware('throttle:imports');

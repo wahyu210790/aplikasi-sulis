@@ -10,6 +10,7 @@ use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use App\Services\AuditLogger;
+use App\Services\ProjectProfitService;
 use App\Support\ApiPaginator;
 use App\Support\AuditAction;
 use Illuminate\Http\JsonResponse;
@@ -51,11 +52,17 @@ class ProjectController extends Controller
         return ApiPaginator::respond($query->paginate(ApiPaginator::perPage($request)), ProjectResource::class, $request);
     }
 
-    public function show(Request $request, Project $project): JsonResponse
+    public function show(Request $request, Project $project, ProjectProfitService $profit): JsonResponse
     {
         $project->load('creator');
+        $resource = new ProjectResource($project);
 
-        return response()->json(['data' => (new ProjectResource($project))->resolve($request)]);
+        // Profit summary (B4.6) only for Owner/Finance: Gudang never gets money (B7).
+        if ($request->user()->canSeeMoney()) {
+            $resource->withSummary($profit->summary($project));
+        }
+
+        return response()->json(['data' => $resource->resolve($request)]);
     }
 
     public function store(StoreProjectRequest $request): JsonResponse
