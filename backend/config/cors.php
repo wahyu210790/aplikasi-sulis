@@ -1,26 +1,14 @@
 <?php
+
+// docs/desain-v2.md B11. Same-origin in production, so no origins are allowed by default.
+// For local development with a different origin, set CORS_ALLOWED_ORIGINS in backend/.env (comma separated).
 return [
-    // Paths that should be reachable via CORS.
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
-
-    // Allowed HTTP methods.
+    'paths' => ['api/*'],
     'allowed_methods' => ['*'],
-
-    // Explicitly allow the frontend origin.
-    'allowed_origins' => ['http://127.0.0.1:8080'],
-
-    // No regex patterns needed.
+    'allowed_origins' => array_values(array_filter(explode(',', (string) env('CORS_ALLOWED_ORIGINS', '')))),
     'allowed_origins_patterns' => [],
-
-    // Allow any request headers.
     'allowed_headers' => ['*'],
-
-    // No special exposed headers.
     'exposed_headers' => [],
-
-    // Max age for pre‑flight cache.
     'max_age' => 0,
-
-    // Important: allow credentials (cookies, Authorization header).
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 ];

@@ -50,7 +50,7 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => 10080, // minutes = 7 days (docs/desain-v2.md B11)
 
     /*
     |--------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\BusinessRuleException;
+use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -23,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Pure API application: never redirect unauthenticated requests to a named 'login' route
         $middleware->redirectGuestsTo(fn () => null);
+
+        $middleware->alias([
+            'active' => EnsureUserIsActive::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $isApi = fn (Request $request) => $request->is('api/*') || $request->expectsJson();
