@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\PurchaseController;
 use App\Http\Controllers\Api\V1\StockOutController;
+use App\Http\Controllers\Api\V1\StockReturnController;
 use App\Http\Controllers\Api\V1\StockTransactionController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\UnitController;
@@ -38,6 +39,7 @@ Route::prefix('v1')->group(function () {
             Route::get('products/{product}', [ProductController::class, 'show']);
             Route::get('projects', [ProjectController::class, 'index']);
             Route::get('projects/{project}', [ProjectController::class, 'show']);
+            Route::get('projects/{project}/issued-items', [StockReturnController::class, 'issuedItems']);
             Route::get('purchases', [PurchaseController::class, 'index']);
             Route::get('purchases/{purchase}', [PurchaseController::class, 'show']);
             Route::get('stock-transactions', [StockTransactionController::class, 'index']);
@@ -54,6 +56,7 @@ Route::prefix('v1')->group(function () {
             Route::post('imports/products', [ImportController::class, 'products'])->middleware('throttle:imports');
             Route::post('purchases/{purchase}/receive', [PurchaseController::class, 'receive']);
             Route::post('stock-outs', [StockOutController::class, 'store']);
+            Route::post('stock-returns', [StockReturnController::class, 'store']);
         });
 
         // Suppliers, project create/update, opening stock, purchase drafts: Owner and Finance only (B6)

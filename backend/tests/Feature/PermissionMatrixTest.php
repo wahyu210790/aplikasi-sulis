@@ -65,6 +65,8 @@ class PermissionMatrixTest extends TestCase
         'POST api/v1/purchases/{purchase}/receive' => ['owner', 'gudang'],
         'POST api/v1/purchases/{purchase}/cancel' => ['owner', 'finance'],
         'POST api/v1/stock-outs' => ['owner', 'gudang'],
+        'POST api/v1/stock-returns' => ['owner', 'gudang'],
+        'GET api/v1/projects/{project}/issued-items' => ['owner', 'gudang', 'finance'],
         'GET api/v1/stock-transactions' => ['owner', 'gudang', 'finance'],
         'GET api/v1/stock-transactions/{stockTransaction}' => ['owner', 'gudang', 'finance'],
     ];
