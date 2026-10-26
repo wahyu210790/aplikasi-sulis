@@ -15,6 +15,8 @@ const CategoriesPage = lazy(() => import('./features/master/pages/CategoriesPage
 const ImportProductsPage = lazy(() => import('./features/imports/pages/ImportProductsPage.jsx'));
 const ProductDetailPage = lazy(() => import('./features/products/pages/ProductDetailPage.jsx'));
 const ProductsPage = lazy(() => import('./features/products/pages/ProductsPage.jsx'));
+const ProjectDetailPage = lazy(() => import('./features/projects/pages/ProjectDetailPage.jsx'));
+const ProjectsPage = lazy(() => import('./features/projects/pages/ProjectsPage.jsx'));
 const SuppliersPage = lazy(() => import('./features/master/pages/SuppliersPage.jsx'));
 const UnitsPage = lazy(() => import('./features/master/pages/UnitsPage.jsx'));
 const UsersPage = lazy(() => import('./features/users/pages/UsersPage.jsx'));
@@ -52,6 +54,10 @@ export default function App() {
           </Route>
           <Route element={<RequireRole action="products.import" />}>
             <Route path="barang/impor" element={page(ImportProductsPage)} />
+          </Route>
+          <Route element={<RequireRole action="projects.view" />}>
+            <Route path="proyek" element={page(ProjectsPage)} />
+            <Route path="proyek/:id" element={page(ProjectDetailPage)} />
           </Route>
           <Route element={<RequireRole action="master.view" />}>
             <Route path="pengaturan/kategori" element={page(CategoriesPage)} />

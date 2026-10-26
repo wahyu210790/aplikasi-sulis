@@ -11,6 +11,8 @@ const ACTIONS = {
   'products.view': ['owner', 'gudang', 'finance'],
   'products.manage': ['owner', 'gudang'],
   'products.import': ['owner', 'gudang'],
+  'projects.view': ['owner', 'gudang', 'finance'],
+  'projects.manage': ['owner', 'finance'],
 };
 
 export function can(user, action) {
