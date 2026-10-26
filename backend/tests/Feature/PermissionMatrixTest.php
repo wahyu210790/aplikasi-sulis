@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Project;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
@@ -42,6 +43,10 @@ class PermissionMatrixTest extends TestCase
         'GET api/v1/suppliers' => ['owner', 'finance'],
         'POST api/v1/suppliers' => ['owner', 'finance'],
         'PUT api/v1/suppliers/{supplier}' => ['owner', 'finance'],
+        'GET api/v1/projects' => ['owner', 'gudang', 'finance'],
+        'GET api/v1/projects/{project}' => ['owner', 'gudang', 'finance'],
+        'POST api/v1/projects' => ['owner', 'finance'],
+        'PUT api/v1/projects/{project}' => ['owner', 'finance'],
     ];
 
     private const ROLES = ['owner', 'gudang', 'finance'];
@@ -76,6 +81,7 @@ class PermissionMatrixTest extends TestCase
             '{unit}' => (string) Unit::factory()->create()->id,
             '{product}' => (string) Product::factory()->create()->id,
             '{supplier}' => (string) Supplier::factory()->create()->id,
+            '{project}' => (string) Project::factory()->create()->id,
         ];
 
         foreach (self::MATRIX as $key => $allowed) {

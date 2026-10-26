@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Project;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,8 +67,20 @@ class MoneyHidingTest extends TestCase
         $this->assertNoMoneyKeys($this->getJson('/api/v1/units?all=1'));
     }
 
+    public function test_gudang_gets_no_money_keys_from_projects(): void
+    {
+        $project = Project::factory()->create(['contract_value' => 150000000]);
+        Sanctum::actingAs(User::factory()->gudang()->create());
+
+        $this->assertNoMoneyKeys($this->getJson('/api/v1/projects'));
+        $this->assertNoMoneyKeys($this->getJson('/api/v1/projects?all=1'));
+        $this->assertNoMoneyKeys($this->getJson("/api/v1/projects/{$project->id}"));
+    }
+
     public function test_owner_and_finance_do_get_money_keys(): void
     {
+        $project = Project::factory()->create(['contract_value' => 150000000]);
+
         foreach (['owner', 'finance'] as $role) {
             Sanctum::actingAs(User::factory()->state(['role' => $role])->create());
 
@@ -76,6 +89,10 @@ class MoneyHidingTest extends TestCase
                 ->assertJsonPath('data.stock.avg_cost', '11500.0000')
                 ->assertJsonPath('data.stock.stock_value', 1322500)
                 ->assertJsonPath('data.stock.has_cost', true);
+
+            $this->getJson("/api/v1/projects/{$project->id}")
+                ->assertOk()
+                ->assertJsonPath('data.contract_value', 150000000);
         }
     }
 }

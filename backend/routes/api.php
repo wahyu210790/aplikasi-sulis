@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\UnitController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -24,12 +25,14 @@ Route::prefix('v1')->group(function () {
             Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword']);
         });
 
-        // Master data: categories, units, products (B6). Gudang sees products without money keys (B7).
+        // Master data: categories, units, products, projects (B6). Gudang sees them without money keys (B7).
         Route::middleware('role:owner,gudang,finance')->group(function () {
             Route::get('categories', [CategoryController::class, 'index']);
             Route::get('units', [UnitController::class, 'index']);
             Route::get('products', [ProductController::class, 'index']);
             Route::get('products/{product}', [ProductController::class, 'show']);
+            Route::get('projects', [ProjectController::class, 'index']);
+            Route::get('projects/{project}', [ProjectController::class, 'show']);
         });
         Route::middleware('role:owner,gudang')->group(function () {
             Route::post('categories', [CategoryController::class, 'store']);
@@ -40,11 +43,13 @@ Route::prefix('v1')->group(function () {
             Route::put('products/{product}', [ProductController::class, 'update']);
         });
 
-        // Suppliers: Owner and Finance only (B6)
+        // Suppliers, project create/update: Owner and Finance only (B6)
         Route::middleware('role:owner,finance')->group(function () {
             Route::get('suppliers', [SupplierController::class, 'index']);
             Route::post('suppliers', [SupplierController::class, 'store']);
             Route::put('suppliers/{supplier}', [SupplierController::class, 'update']);
+            Route::post('projects', [ProjectController::class, 'store']);
+            Route::put('projects/{project}', [ProjectController::class, 'update']);
         });
     });
 });
