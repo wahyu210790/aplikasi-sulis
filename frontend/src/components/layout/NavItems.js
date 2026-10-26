@@ -1,4 +1,4 @@
-import { LayoutDashboard, Ruler, Tags, Truck, Users } from 'lucide-react';
+import { LayoutDashboard, Package, Ruler, Tags, Truck, Users } from 'lucide-react';
 import { can } from '../../lib/permissions.js';
 
 // Sidebar / drawer menu — docs/desain-v2.md B12.5. Later tasks ADD items to the right group.
@@ -12,6 +12,7 @@ export const NAV_GROUPS = [
   {
     label: 'Data',
     items: [
+      { to: '/barang', label: 'Barang', icon: Package, action: 'products.view' },
       { to: '/pemasok', label: 'Pemasok', icon: Truck, action: 'suppliers.manage' },
       { to: '/pengaturan/kategori', label: 'Kategori', icon: Tags, action: 'master.view' },
       { to: '/pengaturan/satuan', label: 'Satuan', icon: Ruler, action: 'master.view' },

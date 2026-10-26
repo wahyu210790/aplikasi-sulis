@@ -1,16 +1,36 @@
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth.jsx';
 import { RequireRole } from './auth/RequireRole.jsx';
 import { AppShell } from './components/layout/AppShell.jsx';
 import { NotFoundPage } from './components/layout/NotFoundPage.jsx';
+import { Spinner } from './components/ui/Spinner.jsx';
 import UiShowcasePage from './dev/UiShowcasePage.jsx';
-import AccountPage from './features/account/pages/AccountPage.jsx';
 import LoginPage from './features/auth/pages/LoginPage.jsx';
 import DashboardPage from './features/dashboard/pages/DashboardPage.jsx';
-import CategoriesPage from './features/master/pages/CategoriesPage.jsx';
-import SuppliersPage from './features/master/pages/SuppliersPage.jsx';
-import UnitsPage from './features/master/pages/UnitsPage.jsx';
-import UsersPage from './features/users/pages/UsersPage.jsx';
+
+// Feature pages are loaded on first visit (smaller first download on mobile).
+const AccountPage = lazy(() => import('./features/account/pages/AccountPage.jsx'));
+const CategoriesPage = lazy(() => import('./features/master/pages/CategoriesPage.jsx'));
+const ProductDetailPage = lazy(() => import('./features/products/pages/ProductDetailPage.jsx'));
+const ProductsPage = lazy(() => import('./features/products/pages/ProductsPage.jsx'));
+const SuppliersPage = lazy(() => import('./features/master/pages/SuppliersPage.jsx'));
+const UnitsPage = lazy(() => import('./features/master/pages/UnitsPage.jsx'));
+const UsersPage = lazy(() => import('./features/users/pages/UsersPage.jsx'));
+
+function page(Page) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-12 text-muted">
+          <Spinner className="h-6 w-6" />
+        </div>
+      }
+    >
+      <Page />
+    </Suspense>
+  );
+}
 
 // Routes — docs/desain-v2.md B12.4. Later tasks ADD routes inside the AppShell route.
 export default function App() {
@@ -21,16 +41,20 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
-          <Route path="akun" element={<AccountPage />} />
+          <Route path="akun" element={page(AccountPage)} />
           <Route element={<RequireRole action="users.manage" />}>
-            <Route path="pengguna" element={<UsersPage />} />
+            <Route path="pengguna" element={page(UsersPage)} />
+          </Route>
+          <Route element={<RequireRole action="products.view" />}>
+            <Route path="barang" element={page(ProductsPage)} />
+            <Route path="barang/:id" element={page(ProductDetailPage)} />
           </Route>
           <Route element={<RequireRole action="master.view" />}>
-            <Route path="pengaturan/kategori" element={<CategoriesPage />} />
-            <Route path="pengaturan/satuan" element={<UnitsPage />} />
+            <Route path="pengaturan/kategori" element={page(CategoriesPage)} />
+            <Route path="pengaturan/satuan" element={page(UnitsPage)} />
           </Route>
           <Route element={<RequireRole action="suppliers.manage" />}>
-            <Route path="pemasok" element={<SuppliersPage />} />
+            <Route path="pemasok" element={page(SuppliersPage)} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>

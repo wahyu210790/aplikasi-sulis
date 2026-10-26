@@ -8,6 +8,8 @@ const ACTIONS = {
   'master.view': ['owner', 'gudang', 'finance'],
   'master.manage': ['owner', 'gudang'],
   'suppliers.manage': ['owner', 'finance'],
+  'products.view': ['owner', 'gudang', 'finance'],
+  'products.manage': ['owner', 'gudang'],
 };
 
 export function can(user, action) {
