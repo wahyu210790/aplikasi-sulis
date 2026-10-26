@@ -5,6 +5,9 @@ const ACTIONS = {
   'dashboard.view': ['owner', 'gudang', 'finance'],
   'account.view': ['owner', 'gudang', 'finance'],
   'users.manage': ['owner'],
+  'master.view': ['owner', 'gudang', 'finance'],
+  'master.manage': ['owner', 'gudang'],
+  'suppliers.manage': ['owner', 'finance'],
 };
 
 export function can(user, action) {

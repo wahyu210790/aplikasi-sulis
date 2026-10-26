@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users } from 'lucide-react';
+import { LayoutDashboard, Ruler, Tags, Truck, Users } from 'lucide-react';
 import { can } from '../../lib/permissions.js';
 
 // Sidebar / drawer menu — docs/desain-v2.md B12.5. Later tasks ADD items to the right group.
@@ -9,7 +9,14 @@ export const NAV_GROUPS = [
     items: [{ to: '/', label: 'Dashboard', icon: LayoutDashboard, action: 'dashboard.view', end: true }],
   },
   { label: 'Transaksi', items: [] },
-  { label: 'Data', items: [] },
+  {
+    label: 'Data',
+    items: [
+      { to: '/pemasok', label: 'Pemasok', icon: Truck, action: 'suppliers.manage' },
+      { to: '/pengaturan/kategori', label: 'Kategori', icon: Tags, action: 'master.view' },
+      { to: '/pengaturan/satuan', label: 'Satuan', icon: Ruler, action: 'master.view' },
+    ],
+  },
   { label: 'Laporan', items: [] },
   {
     label: 'Admin',
@@ -17,7 +24,7 @@ export const NAV_GROUPS = [
   },
 ];
 
-// Items for the Gudang mobile bottom bar (empty in Fase 1).
+// Items for the Gudang mobile bottom bar (empty until Fase 3).
 export function bottomBarItems(user) {
   if (!user || user.role !== 'gudang') return [];
   return NAV_GROUPS.flatMap((group) => group.items).filter((item) => item.bottomBar && can(user, item.action));
