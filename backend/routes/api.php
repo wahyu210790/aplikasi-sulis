@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\V1\OpeningStockController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\PurchaseController;
+use App\Http\Controllers\Api\V1\StockOutController;
+use App\Http\Controllers\Api\V1\StockTransactionController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\UnitController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -38,6 +40,8 @@ Route::prefix('v1')->group(function () {
             Route::get('projects/{project}', [ProjectController::class, 'show']);
             Route::get('purchases', [PurchaseController::class, 'index']);
             Route::get('purchases/{purchase}', [PurchaseController::class, 'show']);
+            Route::get('stock-transactions', [StockTransactionController::class, 'index']);
+            Route::get('stock-transactions/{stockTransaction}', [StockTransactionController::class, 'show']);
         });
         Route::middleware('role:owner,gudang')->group(function () {
             Route::post('categories', [CategoryController::class, 'store']);
@@ -49,6 +53,7 @@ Route::prefix('v1')->group(function () {
             Route::get('imports/products/template', [ImportController::class, 'productTemplate']);
             Route::post('imports/products', [ImportController::class, 'products'])->middleware('throttle:imports');
             Route::post('purchases/{purchase}/receive', [PurchaseController::class, 'receive']);
+            Route::post('stock-outs', [StockOutController::class, 'store']);
         });
 
         // Suppliers, project create/update, opening stock, purchase drafts: Owner and Finance only (B6)

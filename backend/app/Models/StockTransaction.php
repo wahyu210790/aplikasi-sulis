@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MovementType;
 use App\Enums\StockTransactionStatus;
 use App\Enums\StockTransactionType;
 use Illuminate\Database\Eloquent\Model;
@@ -39,6 +40,12 @@ class StockTransaction extends Model
     public function reverser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reversed_by');
+    }
+
+    /** The document lines: its project_out / project_return movements, without reversal rows (ordered by id). */
+    public function lines(): HasMany
+    {
+        return $this->hasMany(StockMovement::class)->where('type', '!=', MovementType::Reversal->value)->orderBy('id');
     }
 
     /** All ledger rows of this document, including reversal rows (ordered by id). */

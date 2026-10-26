@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\StockTransactionType;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Project;
 use App\Models\Purchase;
+use App\Models\StockTransaction;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
@@ -62,6 +64,9 @@ class PermissionMatrixTest extends TestCase
         'DELETE api/v1/purchases/{purchase}' => ['owner', 'finance'],
         'POST api/v1/purchases/{purchase}/receive' => ['owner', 'gudang'],
         'POST api/v1/purchases/{purchase}/cancel' => ['owner', 'finance'],
+        'POST api/v1/stock-outs' => ['owner', 'gudang'],
+        'GET api/v1/stock-transactions' => ['owner', 'gudang', 'finance'],
+        'GET api/v1/stock-transactions/{stockTransaction}' => ['owner', 'gudang', 'finance'],
     ];
 
     protected function routeIds(): array
@@ -74,6 +79,15 @@ class PermissionMatrixTest extends TestCase
             '{supplier}' => (string) Supplier::factory()->create()->id,
             '{project}' => (string) Project::factory()->create()->id,
             '{purchase}' => (string) Purchase::factory()->withItem(Product::factory()->create(), '1', 1000)->create()->id,
+            // A document header without lines is enough for the permission check.
+            '{stockTransaction}' => (string) StockTransaction::create([
+                'number' => 'BK-T'.fake()->unique()->numerify('######'),
+                'type' => StockTransactionType::ProjectOut,
+                'project_id' => Project::factory()->create()->id,
+                'person_name' => 'Budi',
+                'transaction_date' => now()->toDateString(),
+                'created_by' => User::factory()->gudang()->create()->id,
+            ])->id,
         ];
     }
 }
