@@ -17,6 +17,7 @@ const ProductDetailPage = lazy(() => import('./features/products/pages/ProductDe
 const ProductsPage = lazy(() => import('./features/products/pages/ProductsPage.jsx'));
 const ProjectDetailPage = lazy(() => import('./features/projects/pages/ProjectDetailPage.jsx'));
 const ProjectsPage = lazy(() => import('./features/projects/pages/ProjectsPage.jsx'));
+const ReturnFormPage = lazy(() => import('./features/stock/pages/ReturnFormPage.jsx'));
 const StockOutFormPage = lazy(() => import('./features/stock/pages/StockOutFormPage.jsx'));
 const StockTransactionDetailPage = lazy(() => import('./features/stock/pages/StockTransactionDetailPage.jsx'));
 const StockTransactionsPage = lazy(() => import('./features/stock/pages/StockTransactionsPage.jsx'));
@@ -65,9 +66,14 @@ export default function App() {
           <Route element={<RequireRole action="stock.view" />}>
             <Route path="barang-keluar" element={page(StockTransactionsPage, { type: 'project_out' })} />
             <Route path="barang-keluar/:id" element={page(StockTransactionDetailPage, { type: 'project_out' })} />
+            <Route path="pengembalian" element={page(StockTransactionsPage, { type: 'project_return' })} />
+            <Route path="pengembalian/:id" element={page(StockTransactionDetailPage, { type: 'project_return' })} />
           </Route>
           <Route element={<RequireRole action="stock.out" />}>
             <Route path="barang-keluar/baru" element={page(StockOutFormPage)} />
+          </Route>
+          <Route element={<RequireRole action="stock.return" />}>
+            <Route path="pengembalian/baru" element={page(ReturnFormPage)} />
           </Route>
           <Route element={<RequireRole action="master.view" />}>
             <Route path="pengaturan/kategori" element={page(CategoriesPage)} />
