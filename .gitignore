@@ -19,9 +19,6 @@ backend/.env.production
 .phpunit.result.cache
 **/.phpunit.result.cache
 **/.phpunit.cache/
-backend/storage/framework/cache/
-backend/storage/framework/sessions/
-backend/storage/framework/views/
 
 # Temporary and build files
 tmp-puppeteer/
@@ -39,3 +36,6 @@ Thumbs.db
 .vscode/
 .idea/
 .zed/
+
+# Frontend build output (built and uploaded at deploy, never committed)
+frontend/dist/
