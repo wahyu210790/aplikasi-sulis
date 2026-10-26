@@ -24,6 +24,8 @@ const ACTIONS = {
   'purchases.manage': ['owner', 'finance'],
   'purchases.receive': ['owner', 'gudang'],
   'purchases.cancelReceived': ['owner'],
+  // Fase 4 — profit per project (B6)
+  'projectCosts.manage': ['owner', 'finance'],
 };
 
 export function can(user, action) {

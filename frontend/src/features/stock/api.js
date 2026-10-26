@@ -4,9 +4,9 @@ import { api } from '../../lib/api.js';
 // Stock documents and the stock ledger — docs/desain-v2.md B5.2–B5.6, B9.2 Stock.
 // Money keys (value, total_value, value_change, unit_cost, ...) are absent for Gudang (the API removes them).
 
-// After any stock change, every screen that shows stock must reload.
+// After any stock change, every screen that shows stock (or project material cost) must reload.
 function invalidateStock(queryClient) {
-  ['stock-transactions', 'products', 'movements', 'issued-items', 'purchases'].forEach((key) =>
+  ['stock-transactions', 'products', 'movements', 'issued-items', 'purchases', 'projects', 'reports'].forEach((key) =>
     queryClient.invalidateQueries({ queryKey: [key] }),
   );
 }
