@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +27,12 @@ class PermissionMatrixTest extends TestCase
         'POST api/v1/users' => ['owner'],
         'PUT api/v1/users/{user}' => ['owner'],
         'POST api/v1/users/{user}/reset-password' => ['owner'],
+        'GET api/v1/categories' => ['owner', 'gudang', 'finance'],
+        'POST api/v1/categories' => ['owner', 'gudang'],
+        'PUT api/v1/categories/{category}' => ['owner', 'gudang'],
+        'GET api/v1/units' => ['owner', 'gudang', 'finance'],
+        'POST api/v1/units' => ['owner', 'gudang'],
+        'PUT api/v1/units/{unit}' => ['owner', 'gudang'],
     ];
 
     private const ROLES = ['owner', 'gudang', 'finance'];
@@ -52,11 +60,16 @@ class PermissionMatrixTest extends TestCase
 
     public function test_each_role_gets_403_only_where_not_allowed(): void
     {
-        $target = User::factory()->gudang()->create();
+        // Real ids for route parameters, so "allowed" calls never end in 404.
+        $ids = [
+            '{user}' => (string) User::factory()->gudang()->create()->id,
+            '{category}' => (string) Category::factory()->create()->id,
+            '{unit}' => (string) Unit::factory()->create()->id,
+        ];
 
         foreach (self::MATRIX as $key => $allowed) {
             [$method, $uri] = explode(' ', $key, 2);
-            $url = '/'.str_replace('{user}', (string) $target->id, $uri);
+            $url = '/'.strtr($uri, $ids);
 
             if ($allowed === 'public') {
                 $this->app['auth']->forgetGuards();

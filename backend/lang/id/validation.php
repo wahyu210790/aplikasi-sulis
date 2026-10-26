@@ -25,6 +25,7 @@ return [
     'distinct' => ':Attribute tidak boleh duplikat.',
     'email' => ':Attribute harus berupa alamat email yang valid.',
     'enum' => ':Attribute yang dipilih tidak valid.',
+    'extensions' => ':Attribute harus berupa file dengan ekstensi: :values.',
     'exists' => ':Attribute yang dipilih tidak ditemukan.',
     'file' => ':Attribute harus berupa file.',
     'gt' => [
@@ -65,6 +66,7 @@ return [
     'same' => ':Attribute dan :other harus sama.',
     'string' => ':Attribute harus berupa teks.',
     'unique' => ':Attribute sudah digunakan.',
+    'uploaded' => ':Attribute gagal diunggah.',
 
     'custom' => [],
 
@@ -84,5 +86,22 @@ return [
         'direction' => 'arah urutan',
         'notes' => 'catatan',
         'reason' => 'alasan',
+        'all' => 'semua',
+        'symbol' => 'simbol',
+        'sku' => 'SKU',
+        'category_id' => 'kategori',
+        'unit_id' => 'satuan',
+        'min_stock' => 'stok minimum',
+        'low_stock' => 'stok menipis',
+        'phone' => 'telepon',
+        'address' => 'alamat',
+        'code' => 'kode',
+        'client_name' => 'nama klien',
+        'location' => 'lokasi',
+        'contract_value' => 'nilai kontrak',
+        'start_date' => 'tanggal mulai',
+        'end_date' => 'tanggal selesai',
+        'status' => 'status',
+        'file' => 'file',
     ],
 ];
