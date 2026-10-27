@@ -1,0 +1,47 @@
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { api } from '../../lib/api.js';
+
+// Reports — docs/desain-v2.md B9.2 Reports. Read-only.
+// project-profit, stock-value and cost-history are Owner/Finance only (Gudang gets 403).
+// movements is for every role; money keys are absent for Gudang (the API removes them).
+
+export function useProjectProfitReport(params) {
+  return useQuery({
+    queryKey: ['reports', 'project-profit', params],
+    queryFn: () => api('/reports/project-profit', { query: params }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useStockValueReport(params) {
+  return useQuery({
+    queryKey: ['reports', 'stock-value', params],
+    queryFn: () => api('/reports/stock-value', { query: params }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useMovementsReport(params) {
+  return useQuery({
+    queryKey: ['reports', 'movements', params],
+    queryFn: () => api('/reports/movements', { query: params }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useCostHistory(params) {
+  return useQuery({
+    queryKey: ['reports', 'cost-history', params],
+    queryFn: () => api('/reports/cost-history', { query: params }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+// "Riwayat Harga Modal" tab on the product page.
+export function useProductCostHistory(productId, params) {
+  return useQuery({
+    queryKey: ['reports', 'cost-history', 'product', String(productId), params],
+    queryFn: () => api(`/products/${productId}/cost-history`, { query: params }),
+    placeholderData: keepPreviousData,
+  });
+}

@@ -21,6 +21,7 @@ const ProjectsPage = lazy(() => import('./features/projects/pages/ProjectsPage.j
 const PurchaseDetailPage = lazy(() => import('./features/purchases/pages/PurchaseDetailPage.jsx'));
 const PurchaseFormPage = lazy(() => import('./features/purchases/pages/PurchaseFormPage.jsx'));
 const PurchasesPage = lazy(() => import('./features/purchases/pages/PurchasesPage.jsx'));
+const ReportsPage = lazy(() => import('./features/reports/pages/ReportsPage.jsx'));
 const ReturnFormPage = lazy(() => import('./features/stock/pages/ReturnFormPage.jsx'));
 const StockOutFormPage = lazy(() => import('./features/stock/pages/StockOutFormPage.jsx'));
 const StockTransactionDetailPage = lazy(() => import('./features/stock/pages/StockTransactionDetailPage.jsx'));
@@ -96,6 +97,9 @@ export default function App() {
           </Route>
           <Route element={<RequireRole action="suppliers.manage" />}>
             <Route path="pemasok" element={page(SuppliersPage)} />
+          </Route>
+          <Route element={<RequireRole action="reports.view" />}>
+            <Route path="laporan" element={page(ReportsPage)} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>

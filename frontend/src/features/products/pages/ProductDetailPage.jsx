@@ -6,7 +6,6 @@ import { Badge } from '../../../components/ui/Badge.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { DateInput } from '../../../components/ui/DateInput.jsx';
-import { EmptyState } from '../../../components/ui/EmptyState.jsx';
 import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { FilterBar } from '../../../components/ui/FilterBar.jsx';
 import { PageHeader } from '../../../components/ui/PageHeader.jsx';
@@ -19,6 +18,8 @@ import { Tabs } from '../../../components/ui/Tabs.jsx';
 import { MOVEMENT_TYPES } from '../../../lib/constants.js';
 import { formatQty, formatRupiah } from '../../../lib/format.js';
 import { can, canSeeMoney } from '../../../lib/permissions.js';
+import { useProductCostHistory } from '../../reports/api.js';
+import { CostHistoryTable } from '../../reports/components/CostHistoryTable.jsx';
 import { useProductMovements } from '../../stock/api.js';
 import { MovementsTable } from '../../stock/components/MovementsTable.jsx';
 import { useProduct } from '../api.js';
@@ -68,6 +69,26 @@ function MovementHistory({ productId, unit, showMoney }) {
           <Pagination meta={movements.data?.meta} onPageChange={setPage} />
         </>
       )}
+    </>
+  );
+}
+
+// "Riwayat Harga Modal" tab (Owner/Finance): opening stock and received purchases with the average cost after each.
+function CostHistory({ productId }) {
+  const [page, setPage] = useState(1);
+  const history = useProductCostHistory(productId, { page, per_page: 20 });
+
+  if (history.isError) {
+    return (
+      <div className="rounded-card border border-line bg-surface shadow-sm">
+        <ErrorState message={history.error.message} onRetry={() => history.refetch()} />
+      </div>
+    );
+  }
+  return (
+    <>
+      <CostHistoryTable rows={history.data?.data ?? []} loading={history.isLoading} />
+      <Pagination meta={history.data?.meta} onPageChange={setPage} />
     </>
   );
 }
@@ -190,13 +211,7 @@ export default function ProductDetailPage() {
           {tab === 'history' ? (
             <MovementHistory productId={item.id} unit={unit} showMoney={showMoney} />
           ) : (
-            <div className="rounded-card border border-line bg-surface shadow-sm">
-              <EmptyState
-                icon={Wallet}
-                title="Riwayat harga modal belum tersedia"
-                description="Perubahan harga modal per pembelian akan tampil di sini bersama laporan harga modal. Sementara itu, lihat kolom Harga modal setelah di tab Riwayat."
-              />
-            </div>
+            <CostHistory productId={item.id} />
           )}
         </div>
       </div>
