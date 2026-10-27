@@ -5,7 +5,7 @@ import { api } from '../../lib/api.js';
 
 // Receiving or cancelling changes stock, so stock screens reload too.
 function invalidate(queryClient) {
-  ['purchases', 'products', 'movements', 'reports'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+  ['purchases', 'products', 'movements', 'reports', 'dashboard'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
 }
 
 export function usePurchases(params) {

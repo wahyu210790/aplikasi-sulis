@@ -22,6 +22,7 @@ export function useSaveProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...body }) => (id ? api(`/products/${id}`, { method: 'PUT', body }) : api('/products', { method: 'POST', body })),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+    // min_stock and is_active change the low-stock list on the dashboard.
+    onSuccess: () => ['products', 'dashboard'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] })),
   });
 }

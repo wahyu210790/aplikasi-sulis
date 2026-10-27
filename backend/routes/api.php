@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\OpeningStockController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -38,6 +39,7 @@ Route::prefix('v1')->group(function () {
 
         // Master data: categories, units, products, projects (B6). Gudang sees them without money keys (B7).
         Route::middleware('role:owner,gudang,finance')->group(function () {
+            Route::get('dashboard', [DashboardController::class, 'index']);
             Route::get('categories', [CategoryController::class, 'index']);
             Route::get('units', [UnitController::class, 'index']);
             Route::get('products', [ProductController::class, 'index']);

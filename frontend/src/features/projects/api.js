@@ -23,7 +23,8 @@ export function useSaveProject() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...body }) => (id ? api(`/projects/${id}`, { method: 'PUT', body }) : api('/projects', { method: 'POST', body })),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
+    // Contract value and status change the profit reports and the dashboard too.
+    onSuccess: () => ['projects', 'reports', 'dashboard'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] })),
   });
 }
 
@@ -46,7 +47,7 @@ export function useProjectCosts(projectId, params) {
 
 // A cost changes the profit too: reload the project (summary), its costs and the reports.
 function invalidateCosts(queryClient) {
-  ['projects', 'reports'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+  ['projects', 'reports', 'dashboard'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
 }
 
 export function useSaveProjectCost(projectId) {

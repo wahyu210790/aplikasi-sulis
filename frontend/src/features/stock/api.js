@@ -6,7 +6,7 @@ import { api } from '../../lib/api.js';
 
 // After any stock change, every screen that shows stock (or project material cost) must reload.
 function invalidateStock(queryClient) {
-  ['stock-transactions', 'products', 'movements', 'issued-items', 'purchases', 'projects', 'reports'].forEach((key) =>
+  ['stock-transactions', 'products', 'movements', 'issued-items', 'purchases', 'projects', 'reports', 'dashboard'].forEach((key) =>
     queryClient.invalidateQueries({ queryKey: [key] }),
   );
 }
