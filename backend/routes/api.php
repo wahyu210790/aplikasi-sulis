@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AuditLogController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -38,6 +39,7 @@ Route::prefix('v1')->group(function () {
             Route::post('stock-transactions/{stockTransaction}/reverse', [StockTransactionReversalController::class, 'store']);
             Route::post('stock-opnames/{stockOpname}/post', [StockOpnameController::class, 'post']);
             Route::post('stock-opnames/{stockOpname}/reject', [StockOpnameController::class, 'reject']);
+            Route::get('audit-logs', [AuditLogController::class, 'index']);
         });
 
         // Master data: categories, units, products, projects (B6). Gudang sees them without money keys (B7).

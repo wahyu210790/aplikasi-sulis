@@ -92,6 +92,7 @@ class PermissionMatrixTest extends TestCase
         'POST api/v1/stock-opnames/{stockOpname}/cancel' => ['owner', 'gudang'],
         'POST api/v1/stock-opnames/{stockOpname}/post' => ['owner'],
         'POST api/v1/stock-opnames/{stockOpname}/reject' => ['owner'],
+        'GET api/v1/audit-logs' => ['owner'],
     ];
 
     protected function routeIds(): array

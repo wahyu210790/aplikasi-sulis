@@ -1,4 +1,4 @@
-import { ChartColumn, ClipboardCheck, FolderKanban, LayoutDashboard, Package, PackageMinus, PackagePlus, Ruler, ShoppingCart, Tags, Truck, Undo2, Users } from 'lucide-react';
+import { ChartColumn, ClipboardCheck, FolderKanban, History, LayoutDashboard, Package, PackageMinus, PackagePlus, Ruler, ShoppingCart, Tags, Truck, Undo2, Users } from 'lucide-react';
 import { can } from '../../lib/permissions.js';
 
 // Sidebar / drawer menu — docs/desain-v2.md B12.5. Later tasks ADD items to the right group.
@@ -35,7 +35,10 @@ export const NAV_GROUPS = [
   },
   {
     label: 'Admin',
-    items: [{ to: '/pengguna', label: 'Pengguna', icon: Users, action: 'users.manage' }],
+    items: [
+      { to: '/pengguna', label: 'Pengguna', icon: Users, action: 'users.manage' },
+      { to: '/log-aktivitas', label: 'Log Aktivitas', icon: History, action: 'audit.view' },
+    ],
   },
 ];
 

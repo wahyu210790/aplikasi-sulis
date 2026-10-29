@@ -32,6 +32,7 @@ const ACTIONS = {
   'opname.view': ['owner', 'gudang', 'finance'],
   'opname.manage': ['owner', 'gudang'],
   'opname.approve': ['owner'],
+  'audit.view': ['owner'],
 };
 
 export function can(user, action) {

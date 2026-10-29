@@ -11,6 +11,7 @@ import DashboardPage from './features/dashboard/pages/DashboardPage.jsx';
 
 // Feature pages are loaded on first visit (smaller first download on mobile).
 const AccountPage = lazy(() => import('./features/account/pages/AccountPage.jsx'));
+const AuditLogPage = lazy(() => import('./features/audit/pages/AuditLogPage.jsx'));
 const CategoriesPage = lazy(() => import('./features/master/pages/CategoriesPage.jsx'));
 const ImportProductsPage = lazy(() => import('./features/imports/pages/ImportProductsPage.jsx'));
 const OpnameDetailPage = lazy(() => import('./features/opname/pages/OpnameDetailPage.jsx'));
@@ -58,6 +59,9 @@ export default function App() {
           <Route path="akun" element={page(AccountPage)} />
           <Route element={<RequireRole action="users.manage" />}>
             <Route path="pengguna" element={page(UsersPage)} />
+          </Route>
+          <Route element={<RequireRole action="audit.view" />}>
+            <Route path="log-aktivitas" element={page(AuditLogPage)} />
           </Route>
           <Route element={<RequireRole action="products.view" />}>
             <Route path="barang" element={page(ProductsPage)} />

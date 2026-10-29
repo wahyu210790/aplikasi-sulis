@@ -26,10 +26,11 @@ const TYPE_FILTER = [
   })),
 ];
 
-// Link to the document page behind a movement (BK- / RT- / PB- numbers), or null.
+// Link to the document page behind a movement (BK- / RT- / PB- / SO- numbers), or null.
 function documentPath(document) {
   if (!document) return null;
   if (document.kind === 'purchase') return `/pembelian/${document.id}`;
+  if (document.kind === 'stock_opname') return `/stok-opname/${document.id}`;
   return document.number.startsWith('RT-') ? `/pengembalian/${document.id}` : `/barang-keluar/${document.id}`;
 }
 
