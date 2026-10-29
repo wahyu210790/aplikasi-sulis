@@ -10,6 +10,7 @@ import { PageHeader } from '../../../components/ui/PageHeader.jsx';
 import { Pagination } from '../../../components/ui/Pagination.jsx';
 import { Select } from '../../../components/ui/Select.jsx';
 import { ROLE_LABELS } from '../../../lib/constants.js';
+import { dateRangeError } from '../../../lib/dateRange.js';
 import { formatDateTime } from '../../../lib/format.js';
 import { useUsers } from '../../users/api.js';
 import { useAuditLogs } from '../api.js';
@@ -26,7 +27,8 @@ export default function AuditLogPage() {
   const [selected, setSelected] = useState(null);
 
   const users = useUsers({ per_page: 100 });
-  const logs = useAuditLogs({ user_id: userId, action, date_from: dateFrom, date_to: dateTo, page, per_page: 25 });
+  const rangeError = dateRangeError(dateFrom, dateTo);
+  const logs = useAuditLogs({ user_id: userId, action, date_from: dateFrom, date_to: dateTo, page, per_page: 25 }, { enabled: !rangeError });
 
   function changeFilter(setter) {
     return (value) => {
@@ -75,11 +77,29 @@ export default function AuditLogPage() {
         <div className="w-full sm:w-52">
           <Select value={action} onChange={changeFilter(setAction)} options={actionOptions} />
         </div>
-        <DateInput value={dateFrom} onChange={changeFilter(setDateFrom)} aria-label="Dari tanggal" className="sm:w-40" />
-        <DateInput value={dateTo} onChange={changeFilter(setDateTo)} aria-label="Sampai tanggal" className="sm:w-40" />
+        <DateInput
+          value={dateFrom}
+          onChange={changeFilter(setDateFrom)}
+          max={dateTo || undefined}
+          invalid={Boolean(rangeError)}
+          aria-label="Dari tanggal"
+          className="sm:w-40"
+        />
+        <DateInput
+          value={dateTo}
+          onChange={changeFilter(setDateTo)}
+          min={dateFrom || undefined}
+          invalid={Boolean(rangeError)}
+          aria-label="Sampai tanggal"
+          className="sm:w-40"
+        />
       </FilterBar>
 
-      {logs.isError ? (
+      {rangeError ? (
+        <p role="alert" className="rounded-card border border-line bg-danger-soft px-4 py-3 text-sm text-danger">
+          {rangeError}
+        </p>
+      ) : logs.isError ? (
         <div className="rounded-card border border-line bg-surface shadow-sm">
           <ErrorState message={logs.error.message} onRetry={() => logs.refetch()} />
         </div>

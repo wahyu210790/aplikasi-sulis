@@ -39,7 +39,6 @@ export function ProjectCostsTab({ projectId, canManage }) {
     {
       key: 'created_by',
       header: 'Dicatat oleh',
-      hideOnMobile: true,
       render: (row) => (
         <div className="text-sm">
           <div>{row.created_by?.name ?? '–'}</div>

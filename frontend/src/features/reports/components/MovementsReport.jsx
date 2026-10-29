@@ -12,6 +12,7 @@ import { Money } from '../../../components/ui/Money.jsx';
 import { Pagination } from '../../../components/ui/Pagination.jsx';
 import { Select } from '../../../components/ui/Select.jsx';
 import { MOVEMENT_TYPES } from '../../../lib/constants.js';
+import { dateRangeError } from '../../../lib/dateRange.js';
 import { formatDate, formatQty } from '../../../lib/format.js';
 import { useDebouncedValue } from '../../../lib/useDebouncedValue.js';
 import { useProjects } from '../../projects/api.js';
@@ -79,7 +80,8 @@ export function MovementsReport({ showMoney }) {
     date_from: dateFrom,
     date_to: dateTo,
   };
-  const movements = useMovementsReport({ ...filters, page, per_page: 20 });
+  const rangeError = dateRangeError(dateFrom, dateTo);
+  const movements = useMovementsReport({ ...filters, page, per_page: 20 }, { enabled: !rangeError });
   const filtered = Boolean(type || product || project || dateFrom || dateTo);
 
   function changeFilter(setter) {
@@ -173,12 +175,30 @@ export function MovementsReport({ showMoney }) {
           <ProjectFilter value={project} onChange={changeFilter(setProject)} />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-          <DateInput value={dateFrom} onChange={changeFilter(setDateFrom)} aria-label="Dari tanggal" className="sm:w-40" />
-          <DateInput value={dateTo} onChange={changeFilter(setDateTo)} aria-label="Sampai tanggal" className="sm:w-40" />
+          <DateInput
+            value={dateFrom}
+            onChange={changeFilter(setDateFrom)}
+            max={dateTo || undefined}
+            invalid={Boolean(rangeError)}
+            aria-label="Dari tanggal"
+            className="sm:w-40"
+          />
+          <DateInput
+            value={dateTo}
+            onChange={changeFilter(setDateTo)}
+            min={dateFrom || undefined}
+            invalid={Boolean(rangeError)}
+            aria-label="Sampai tanggal"
+            className="sm:w-40"
+          />
         </div>
-        <ExportButton report="movements" params={filters} fileName="pergerakan-barang" />
+        <ExportButton report="movements" params={filters} fileName="pergerakan-barang" disabled={Boolean(rangeError)} />
       </FilterBar>
-      {movements.isError ? (
+      {rangeError ? (
+        <p role="alert" className="rounded-card border border-line bg-danger-soft px-4 py-3 text-sm text-danger">
+          {rangeError}
+        </p>
+      ) : movements.isError ? (
         <div className="rounded-card border border-line bg-surface shadow-sm">
           <ErrorState message={movements.error.message} onRetry={() => movements.refetch()} />
         </div>

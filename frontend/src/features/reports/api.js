@@ -21,11 +21,13 @@ export function useStockValueReport(params) {
   });
 }
 
-export function useMovementsReport(params) {
+// enabled: false while the date filters are wrong (T6.03), so the page does not ask the API.
+export function useMovementsReport(params, { enabled = true } = {}) {
   return useQuery({
     queryKey: ['reports', 'movements', params],
     queryFn: () => api('/reports/movements', { query: params }),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 
