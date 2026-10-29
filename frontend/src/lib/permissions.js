@@ -28,6 +28,10 @@ const ACTIONS = {
   'projectCosts.manage': ['owner', 'finance'],
   'reports.view': ['owner', 'gudang', 'finance'],
   'reports.money': ['owner', 'finance'],
+  // Fase 5 — stock opname (B5.5, H7)
+  'opname.view': ['owner', 'gudang', 'finance'],
+  'opname.manage': ['owner', 'gudang'],
+  'opname.approve': ['owner'],
 };
 
 export function can(user, action) {

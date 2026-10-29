@@ -13,6 +13,8 @@ import DashboardPage from './features/dashboard/pages/DashboardPage.jsx';
 const AccountPage = lazy(() => import('./features/account/pages/AccountPage.jsx'));
 const CategoriesPage = lazy(() => import('./features/master/pages/CategoriesPage.jsx'));
 const ImportProductsPage = lazy(() => import('./features/imports/pages/ImportProductsPage.jsx'));
+const OpnameDetailPage = lazy(() => import('./features/opname/pages/OpnameDetailPage.jsx'));
+const OpnamesPage = lazy(() => import('./features/opname/pages/OpnamesPage.jsx'));
 const OpeningStockPage = lazy(() => import('./features/stock/pages/OpeningStockPage.jsx'));
 const ProductDetailPage = lazy(() => import('./features/products/pages/ProductDetailPage.jsx'));
 const ProductsPage = lazy(() => import('./features/products/pages/ProductsPage.jsx'));
@@ -82,6 +84,10 @@ export default function App() {
           </Route>
           <Route element={<RequireRole action="stock.return" />}>
             <Route path="pengembalian/baru" element={page(ReturnFormPage)} />
+          </Route>
+          <Route element={<RequireRole action="opname.view" />}>
+            <Route path="stok-opname" element={page(OpnamesPage)} />
+            <Route path="stok-opname/:id" element={page(OpnameDetailPage)} />
           </Route>
           <Route element={<RequireRole action="purchases.view" />}>
             <Route path="pembelian" element={page(PurchasesPage)} />

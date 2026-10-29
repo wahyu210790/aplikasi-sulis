@@ -14,12 +14,12 @@ function toOption(product) {
   };
 }
 
-// Searchable picker of ACTIVE products (searches the API by SKU or name).
+// Searchable picker of ACTIVE products (searches the API by SKU or name). includeInactive: also inactive ones (stock opname).
 // value / onChange use a product object (from GET /products, or { id, sku, name, unit_symbol } from a saved document). excludeIds: products already in the list.
-export function ProductPicker({ id, value, onChange, excludeIds = [], invalid = false }) {
+export function ProductPicker({ id, value, onChange, excludeIds = [], invalid = false, includeInactive = false }) {
   const [query, setQuery] = useState('');
   const search = useDebouncedValue(query, 300);
-  const products = useProducts({ search, is_active: 1, per_page: 20 });
+  const products = useProducts({ search, is_active: includeInactive ? undefined : 1, per_page: 20 });
 
   const options = (products.data?.data ?? []).filter((p) => !excludeIds.includes(p.id) || p.id === value?.id).map(toOption);
 
