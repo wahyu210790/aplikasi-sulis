@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { Ban, Printer } from 'lucide-react';
 import { useAuth } from '../../../auth/useAuth.js';
+import { PrintFooter, PrintHeader, PrintSignatures } from '../../../components/print/PrintParts.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog.jsx';
@@ -105,11 +106,7 @@ export default function StockTransactionDetailPage({ type }) {
       ) : null}
 
       <div className="print-area space-y-6">
-        <div className="hidden border-b border-ink pb-3 print:block">
-          <p className="text-sm font-semibold">PT. Best Engineer Persada</p>
-          <p className="mt-1 text-lg font-bold tracking-wide">{doc.printTitle}</p>
-          <p className="font-mono text-sm">{item.number}</p>
-        </div>
+        <PrintHeader title={doc.printTitle} number={item.number} cancelled={!posted} />
 
         <Card title="Informasi dokumen">
           <dl className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
@@ -174,14 +171,8 @@ export default function StockTransactionDetailPage({ type }) {
           </div>
         </Card>
 
-        <div className="hidden grid-cols-2 gap-8 pt-8 text-center text-sm print:grid">
-          {doc.signatures.map((sign) => (
-            <div key={sign.label}>
-              <p>{sign.label}</p>
-              <div className="mt-16 border-t border-ink pt-1">{sign.person ? item.person_name : '(nama jelas)'}</div>
-            </div>
-          ))}
-        </div>
+        <PrintSignatures signatures={doc.signatures.map((sign) => ({ label: sign.label, name: sign.person ? item.person_name : '' }))} />
+        <PrintFooter user={user} />
       </div>
 
       <ConfirmDialog

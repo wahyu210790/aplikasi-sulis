@@ -37,11 +37,15 @@
   }
 }
 
-/* Printing a document (Barang Keluar / Pengembalian): only the element with class "print-area" is printed. */
+/* Printing a document (Barang Keluar / Pengembalian / Bukti Penerimaan): only the element with class "print-area" is printed. */
 @media print {
   @page {
     size: A4;
     margin: 15mm;
+  }
+  html,
+  body {
+    background: #fff;
   }
   body * {
     visibility: hidden;
@@ -49,9 +53,17 @@
   .print-area,
   .print-area * {
     visibility: visible;
+    box-shadow: none !important;
   }
   .print-area {
     position: absolute;
     inset: 0 0 auto 0;
+  }
+  .print-area thead {
+    display: table-header-group;
+  }
+  .print-area tr,
+  .print-keep {
+    break-inside: avoid;
   }
 }

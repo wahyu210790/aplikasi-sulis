@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Ban, PackageCheck, Pencil, Trash2 } from 'lucide-react';
+import { Ban, PackageCheck, Pencil, Printer, Trash2 } from 'lucide-react';
 import { useAuth } from '../../../auth/useAuth.js';
+import { PrintFooter, PrintHeader, PrintSignatures } from '../../../components/print/PrintParts.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog.jsx';
@@ -89,6 +90,8 @@ export default function PurchaseDetailPage() {
   const item = query.data.data;
   const isDraft = item.status === 'draft';
   const canManage = can(user, 'purchases.manage');
+  // Only goods that really arrived get a printed receipt (also after a later cancel, then marked DIBATALKAN).
+  const printable = Boolean(item.received_at);
 
   async function handleConfirm(reason) {
     const kind = pending;
@@ -112,6 +115,11 @@ export default function PurchaseDetailPage() {
         breadcrumb={breadcrumb}
         actions={
           <>
+            {printable ? (
+              <Button variant="secondary" leftIcon={Printer} onClick={() => window.print()}>
+                Cetak
+              </Button>
+            ) : null}
             {isDraft && canManage ? (
               <>
                 <Button variant="secondary" leftIcon={Pencil} onClick={() => navigate(`/pembelian/${item.id}/ubah`)}>
@@ -148,7 +156,9 @@ export default function PurchaseDetailPage() {
         </div>
       ) : null}
 
-      <div className="space-y-6">
+      <div className={printable ? 'print-area space-y-6' : 'space-y-6'}>
+        <PrintHeader title="BUKTI PENERIMAAN BARANG" number={item.number} cancelled={item.status === 'batal'} />
+
         <Card title="Informasi pembelian">
           <dl className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Status">
@@ -216,6 +226,14 @@ export default function PurchaseDetailPage() {
             </table>
           </div>
         </Card>
+
+        <PrintSignatures
+          signatures={[
+            { label: 'Diserahkan oleh (Pemasok)', name: '' },
+            { label: 'Diterima oleh (Gudang)', name: item.received_by?.name ?? '' },
+          ]}
+        />
+        <PrintFooter user={user} />
       </div>
 
       <ConfirmDialog
