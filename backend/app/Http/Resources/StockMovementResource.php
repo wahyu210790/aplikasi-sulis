@@ -10,8 +10,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * One ledger row (docs/desain-v2.md B3.13, B9.2). Money keys are ABSENT for Gudang (B7).
  * Load StockMovementResource::RELATIONS so product, project, document and user can be shown.
  *
- * document: the paper behind the movement, or null (opening stock, opname):
- *   {"kind": "stock_transaction", "id": 12, "number": "BK-000012"} or {"kind": "purchase", "id": 3, "number": "PB-000003"}.
+ * document: the paper behind the movement, or null (opening stock):
+ *   {"kind": "stock_transaction", "id": 12, "number": "BK-000012"}, {"kind": "purchase", "id": 3, "number": "PB-000003"}
+ *   or {"kind": "stock_opname", "id": 2, "number": "SO-000002"}.
  * A reversal points to the same document as the movement it cancels.
  *
  * @mixin StockMovement
@@ -20,7 +21,7 @@ class StockMovementResource extends JsonResource
 {
     public const RELATIONS = [
         'product.unit', 'project', 'creator', 'stockTransaction',
-        'purchaseItem.purchase', 'reverses.purchaseItem.purchase',
+        'purchaseItem.purchase', 'reverses.purchaseItem.purchase', 'stockOpnameItem.stockOpname',
     ];
 
     public function toArray(Request $request): array
@@ -60,6 +61,12 @@ class StockMovementResource extends JsonResource
     {
         if ($this->relationLoaded('stockTransaction') && $this->stockTransaction) {
             return ['kind' => 'stock_transaction', 'id' => $this->stockTransaction->id, 'number' => $this->stockTransaction->number];
+        }
+
+        if ($this->relationLoaded('stockOpnameItem') && $this->stockOpnameItem) {
+            $opname = $this->stockOpnameItem->stockOpname;
+
+            return ['kind' => 'stock_opname', 'id' => $opname->id, 'number' => $opname->number];
         }
 
         $source = $this->relationLoaded('reverses') && $this->reverses ? $this->reverses : $this->resource;

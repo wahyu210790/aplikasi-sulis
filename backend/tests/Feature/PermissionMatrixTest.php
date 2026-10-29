@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Project;
 use App\Models\ProjectCost;
 use App\Models\Purchase;
+use App\Models\StockOpname;
 use App\Models\StockTransaction;
 use App\Models\Supplier;
 use App\Models\Unit;
@@ -83,6 +84,14 @@ class PermissionMatrixTest extends TestCase
         'GET api/v1/reports/cost-history' => ['owner', 'finance'],
         'GET api/v1/products/{product}/cost-history' => ['owner', 'finance'],
         'GET api/v1/dashboard' => ['owner', 'gudang', 'finance'],
+        'GET api/v1/stock-opnames' => ['owner', 'gudang', 'finance'],
+        'GET api/v1/stock-opnames/{stockOpname}' => ['owner', 'gudang', 'finance'],
+        'POST api/v1/stock-opnames' => ['owner', 'gudang'],
+        'PUT api/v1/stock-opnames/{stockOpname}/items' => ['owner', 'gudang'],
+        'POST api/v1/stock-opnames/{stockOpname}/submit' => ['owner', 'gudang'],
+        'POST api/v1/stock-opnames/{stockOpname}/cancel' => ['owner', 'gudang'],
+        'POST api/v1/stock-opnames/{stockOpname}/post' => ['owner'],
+        'POST api/v1/stock-opnames/{stockOpname}/reject' => ['owner'],
     ];
 
     protected function routeIds(): array
@@ -108,6 +117,7 @@ class PermissionMatrixTest extends TestCase
                 'transaction_date' => now()->toDateString(),
                 'created_by' => User::factory()->gudang()->create()->id,
             ])->id,
+            '{stockOpname}' => (string) StockOpname::factory()->create()->id,
         ];
     }
 }

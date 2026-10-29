@@ -68,6 +68,12 @@ class StockMovement extends Model
         return $this->belongsTo(PurchaseItem::class);
     }
 
+    /** The stock opname line an opname_in / opname_out came from (no FK: see the migration). */
+    public function stockOpnameItem(): BelongsTo
+    {
+        return $this->belongsTo(StockOpnameItem::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

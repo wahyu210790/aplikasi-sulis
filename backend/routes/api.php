@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\ProjectCostController;
 use App\Http\Controllers\Api\V1\PurchaseController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\StockMovementController;
+use App\Http\Controllers\Api\V1\StockOpnameController;
 use App\Http\Controllers\Api\V1\StockOutController;
 use App\Http\Controllers\Api\V1\StockReturnController;
 use App\Http\Controllers\Api\V1\StockTransactionController;
@@ -35,6 +36,8 @@ Route::prefix('v1')->group(function () {
             Route::put('users/{user}', [UserController::class, 'update']);
             Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword']);
             Route::post('stock-transactions/{stockTransaction}/reverse', [StockTransactionReversalController::class, 'store']);
+            Route::post('stock-opnames/{stockOpname}/post', [StockOpnameController::class, 'post']);
+            Route::post('stock-opnames/{stockOpname}/reject', [StockOpnameController::class, 'reject']);
         });
 
         // Master data: categories, units, products, projects (B6). Gudang sees them without money keys (B7).
@@ -54,6 +57,8 @@ Route::prefix('v1')->group(function () {
             Route::get('purchases/{purchase}', [PurchaseController::class, 'show']);
             Route::get('stock-transactions', [StockTransactionController::class, 'index']);
             Route::get('stock-transactions/{stockTransaction}', [StockTransactionController::class, 'show']);
+            Route::get('stock-opnames', [StockOpnameController::class, 'index']);
+            Route::get('stock-opnames/{stockOpname}', [StockOpnameController::class, 'show']);
         });
         Route::middleware('role:owner,gudang')->group(function () {
             Route::post('categories', [CategoryController::class, 'store']);
@@ -67,6 +72,10 @@ Route::prefix('v1')->group(function () {
             Route::post('purchases/{purchase}/receive', [PurchaseController::class, 'receive']);
             Route::post('stock-outs', [StockOutController::class, 'store']);
             Route::post('stock-returns', [StockReturnController::class, 'store']);
+            Route::post('stock-opnames', [StockOpnameController::class, 'store']);
+            Route::put('stock-opnames/{stockOpname}/items', [StockOpnameController::class, 'updateItems']);
+            Route::post('stock-opnames/{stockOpname}/submit', [StockOpnameController::class, 'submit']);
+            Route::post('stock-opnames/{stockOpname}/cancel', [StockOpnameController::class, 'cancel']);
         });
 
         // Suppliers, project create/update, project costs, opening stock, purchase drafts: Owner and Finance only (B6)
