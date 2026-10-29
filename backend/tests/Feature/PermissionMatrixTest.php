@@ -14,6 +14,7 @@ use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\Concerns\ChecksPermissionMatrix;
 use Tests\TestCase;
 
@@ -120,5 +121,23 @@ class PermissionMatrixTest extends TestCase
             ])->id,
             '{stockOpname}' => (string) StockOpname::factory()->create()->id,
         ];
+    }
+
+    public function test_every_api_route_outside_auth_has_a_role_middleware(): void
+    {
+        $missing = [];
+        foreach (Route::getRoutes() as $route) {
+            if (! str_starts_with($route->uri(), 'api/') || str_starts_with($route->uri(), 'api/v1/auth/')) {
+                continue;
+            }
+            $middleware = array_filter($route->gatherMiddleware(), 'is_string');
+            $hasAuth = in_array('auth:sanctum', $middleware, true);
+            $hasRole = count(preg_grep('/^role:.+$/', $middleware)) > 0;
+            if (! $hasAuth || ! $hasRole) {
+                $missing[] = implode('|', $route->methods()).' '.$route->uri();
+            }
+        }
+
+        $this->assertSame([], $missing, 'Every api route outside auth/* needs auth:sanctum AND role:...');
     }
 }
