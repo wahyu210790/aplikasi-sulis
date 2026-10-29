@@ -11,6 +11,7 @@ import { StatCard } from '../../../components/ui/StatCard.jsx';
 import { StatusBadge } from '../../../components/ui/StatusBadge.jsx';
 import { formatPercent, formatRupiah } from '../../../lib/format.js';
 import { useProjectProfitReport } from '../api.js';
+import { ExportButton } from './ExportButton.jsx';
 
 const STATUS_FILTER = [
   { value: '', label: 'Semua status' },
@@ -84,6 +85,7 @@ export function ProjectProfitReport() {
         <div className="w-full sm:w-44">
           <Select value={status} onChange={setStatus} options={STATUS_FILTER} />
         </div>
+        <ExportButton report="project-profit" params={{ status }} fileName="laba-proyek" />
       </FilterBar>
 
       {report.isError ? (

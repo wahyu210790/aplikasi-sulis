@@ -51,6 +51,7 @@ Route::prefix('v1')->group(function () {
             Route::get('products/{product}', [ProductController::class, 'show']);
             Route::get('products/{product}/movements', [StockMovementController::class, 'product']);
             Route::get('reports/movements', [StockMovementController::class, 'report']);
+            Route::get('reports/movements/export', [StockMovementController::class, 'reportExport']);
             Route::get('reports/projects/{project}/materials', [ReportController::class, 'projectMaterials']);
             Route::get('projects', [ProjectController::class, 'index']);
             Route::get('projects/{project}', [ProjectController::class, 'show']);
@@ -92,7 +93,9 @@ Route::prefix('v1')->group(function () {
             Route::put('projects/{project}/costs/{cost}', [ProjectCostController::class, 'update'])->scopeBindings();
             Route::delete('projects/{project}/costs/{cost}', [ProjectCostController::class, 'destroy'])->scopeBindings();
             Route::get('reports/project-profit', [ReportController::class, 'projectProfit']);
+            Route::get('reports/project-profit/export', [ReportController::class, 'projectProfitExport']);
             Route::get('reports/stock-value', [ReportController::class, 'stockValue']);
+            Route::get('reports/stock-value/export', [ReportController::class, 'stockValueExport']);
             Route::get('reports/cost-history', [ReportController::class, 'costHistory']);
             Route::get('products/{product}/cost-history', [ReportController::class, 'productCostHistory']);
             Route::post('opening-stocks', [OpeningStockController::class, 'store']);

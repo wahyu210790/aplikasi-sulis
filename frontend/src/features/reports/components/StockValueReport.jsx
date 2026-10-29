@@ -14,6 +14,7 @@ import { Select } from '../../../components/ui/Select.jsx';
 import { StatCard } from '../../../components/ui/StatCard.jsx';
 import { formatRupiah } from '../../../lib/format.js';
 import { useStockValueReport } from '../api.js';
+import { ExportButton } from './ExportButton.jsx';
 
 const ACTIVE_FILTER = [
   { value: '', label: 'Semua barang' },
@@ -94,6 +95,7 @@ export function StockValueReport() {
         <div className="w-full sm:w-44">
           <Select value={isActive} onChange={changeFilter(setIsActive)} options={ACTIVE_FILTER} />
         </div>
+        <ExportButton report="stock-value" params={{ search, is_active: isActive }} fileName="nilai-stok" />
       </FilterBar>
 
       {report.isError ? (

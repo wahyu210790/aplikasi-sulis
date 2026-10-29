@@ -15,8 +15,11 @@ use App\Models\StockBalance;
 use App\Models\StockMovement;
 use App\Services\ProjectProfitService;
 use App\Support\ApiPaginator;
+use App\Support\ReportExport;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Read-only reports (docs/desain-v2.md B9.2 Reports). Nothing here writes data.
@@ -28,6 +31,29 @@ class ReportController extends Controller
 
     /** GET /reports/project-profit — every project (optional ?status=) with its profit, plus totals. Owner/Finance. */
     public function projectProfit(ProjectProfitReportRequest $request): JsonResponse
+    {
+        return response()->json($this->projectProfitData($request));
+    }
+
+    /** GET /reports/project-profit/export — the same rows and totals as an Excel file (docs/desain-v2.md T6.01). Owner/Finance. */
+    public function projectProfitExport(ProjectProfitReportRequest $request): BinaryFileResponse
+    {
+        $report = $this->projectProfitData($request);
+        $rows = [['Kode', 'Nama Proyek', 'Klien', 'Status', 'Nilai Kontrak', 'Biaya Material', 'Biaya Lain', 'Laba', 'Margin (%)']];
+        foreach ($report['data'] as $row) {
+            $rows[] = [
+                $row['code'], $row['name'], $row['client_name'] ?? '', $row['status_label'],
+                $row['contract_value'], $row['material_cost'], $row['other_costs'], $row['profit'], $row['margin_percent'],
+            ];
+        }
+        $totals = $report['totals'];
+        $rows[] = ['TOTAL', '', '', '', $totals['contract_value'], $totals['material_cost'], $totals['other_costs'], $totals['profit'], $totals['margin_percent']];
+
+        return ReportExport::download($rows, 'laba-proyek');
+    }
+
+    /** @return array{data: list<array<string, mixed>>, totals: array<string, mixed>} */
+    private function projectProfitData(ProjectProfitReportRequest $request): array
     {
         $query = Project::query()->orderBy('code');
         if ($status = $request->validated('status')) {
@@ -59,13 +85,13 @@ class ReportController extends Controller
             $sum['other_costs'] += $row['other_costs'];
         }
 
-        return response()->json([
+        return [
             'data' => $rows,
             'totals' => [
                 'contract_value' => $sum['contract_value'],
                 ...ProjectProfitService::row($sum['contract_value'], $sum['material_cost'], $sum['other_costs']),
             ],
-        ]);
+        ];
     }
 
     /**
@@ -113,6 +139,39 @@ class ReportController extends Controller
      */
     public function stockValue(StockValueReportRequest $request): JsonResponse
     {
+        $query = $this->stockValueQuery($request);
+        $total = (int) StockBalance::query()->whereIn('product_id', (clone $query)->select('id'))->sum('stock_value');
+
+        $page = $query->with(['category', 'unit', 'stockBalance'])->orderBy('name')->orderBy('id')->paginate(ApiPaginator::perPage($request));
+        $body = ApiPaginator::respond($page, StockValueResource::class, $request)->getData(true);
+        $body['totals'] = ['stock_value' => $total];
+
+        return response()->json($body);
+    }
+
+    /** GET /reports/stock-value/export — ALL matching products (not one page) as an Excel file, plus a total row. Owner/Finance. */
+    public function stockValueExport(StockValueReportRequest $request): BinaryFileResponse
+    {
+        $rows = [['SKU', 'Nama Barang', 'Kategori', 'Satuan', 'Jumlah', 'Harga Modal Rata-rata', 'Nilai Stok', 'Harga Modal Ada', 'Status']];
+        $total = 0;
+        $products = $this->stockValueQuery($request)->with(['category', 'unit', 'stockBalance'])->orderBy('name')->orderBy('id')->get();
+        foreach ($products as $product) {
+            $balance = $product->stockBalance;
+            $rows[] = [
+                $product->sku, $product->name, $product->category->name, $product->unit->symbol,
+                ReportExport::number($balance->qty), ReportExport::number($balance->avg_cost), (int) $balance->stock_value,
+                $balance->has_cost ? 'Ya' : 'Belum', $product->is_active ? 'Aktif' : 'Nonaktif',
+            ];
+            $total += (int) $balance->stock_value;
+        }
+        $rows[] = ['TOTAL', '', '', '', null, null, $total, '', ''];
+
+        return ReportExport::download($rows, 'nilai-stok');
+    }
+
+    /** Products that match the stock-value filters (search, category, active). */
+    private function stockValueQuery(StockValueReportRequest $request): Builder
+    {
         $query = Product::query();
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search) {
@@ -126,13 +185,7 @@ class ReportController extends Controller
             $query->where('is_active', (bool) $request->validated('is_active'));
         }
 
-        $total = (int) StockBalance::query()->whereIn('product_id', (clone $query)->select('id'))->sum('stock_value');
-
-        $page = $query->with(['category', 'unit', 'stockBalance'])->orderBy('name')->orderBy('id')->paginate(ApiPaginator::perPage($request));
-        $body = ApiPaginator::respond($page, StockValueResource::class, $request)->getData(true);
-        $body['totals'] = ['stock_value' => $total];
-
-        return response()->json($body);
+        return $query;
     }
 
     /** GET /reports/cost-history — purchase prices and the average cost after each (optional ?product_id=). Owner/Finance. */

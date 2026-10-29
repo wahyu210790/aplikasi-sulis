@@ -57,6 +57,7 @@ class MoneyHidingTest extends TestCase
         'GET api/v1/stock-transactions',
         'GET api/v1/stock-transactions/{stockTransaction}',
         'GET api/v1/reports/movements',
+        'GET api/v1/reports/movements/export',
         'GET api/v1/reports/projects/{project}/materials',
         'GET api/v1/dashboard',
         'GET api/v1/stock-opnames',
@@ -68,7 +69,7 @@ class MoneyHidingTest extends TestCase
     ];
 
     /** Routes that answer without a JSON body (file download, 204 No Content): only checked for success. */
-    private const NO_JSON_BODY = ['GET api/v1/imports/products/template', 'PUT api/v1/auth/password', 'POST api/v1/auth/logout'];
+    private const NO_JSON_BODY = ['GET api/v1/imports/products/template', 'GET api/v1/reports/movements/export', 'PUT api/v1/auth/password', 'POST api/v1/auth/logout'];
 
     private Product $product;
 
@@ -287,6 +288,7 @@ class MoneyHidingTest extends TestCase
 
         $as('GET api/v1/products/{product}/movements');
         $as('GET api/v1/reports/movements')->assertJsonFragment(['type' => 'opname_out']);
+        $as('GET api/v1/reports/movements/export'); // the file itself is checked in ReportExportTest
         $as('GET api/v1/reports/projects/{project}/materials');
         $as('GET api/v1/dashboard');
         $as('PUT api/v1/auth/password', ['current_password' => 'Password123', 'password' => 'BaruSekali9', 'password_confirmation' => 'BaruSekali9']);

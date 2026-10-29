@@ -17,6 +17,7 @@ import { useDebouncedValue } from '../../../lib/useDebouncedValue.js';
 import { useProjects } from '../../projects/api.js';
 import { ProductPicker } from '../../stock/components/ProductPicker.jsx';
 import { useMovementsReport } from '../api.js';
+import { ExportButton } from './ExportButton.jsx';
 
 const TYPE_FILTER = [
   { value: '', label: 'Semua jenis' },
@@ -71,15 +72,14 @@ export function MovementsReport({ showMoney }) {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
-  const movements = useMovementsReport({
+  const filters = {
     type,
     product_id: product?.id,
     project_id: project?.id,
     date_from: dateFrom,
     date_to: dateTo,
-    page,
-    per_page: 20,
-  });
+  };
+  const movements = useMovementsReport({ ...filters, page, per_page: 20 });
   const filtered = Boolean(type || product || project || dateFrom || dateTo);
 
   function changeFilter(setter) {
@@ -176,6 +176,7 @@ export function MovementsReport({ showMoney }) {
           <DateInput value={dateFrom} onChange={changeFilter(setDateFrom)} aria-label="Dari tanggal" className="sm:w-40" />
           <DateInput value={dateTo} onChange={changeFilter(setDateTo)} aria-label="Sampai tanggal" className="sm:w-40" />
         </div>
+        <ExportButton report="movements" params={filters} fileName="pergerakan-barang" />
       </FilterBar>
       {movements.isError ? (
         <div className="rounded-card border border-line bg-surface shadow-sm">

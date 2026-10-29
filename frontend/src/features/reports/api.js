@@ -45,3 +45,9 @@ export function useProductCostHistory(productId, params) {
     placeholderData: keepPreviousData,
   });
 }
+
+// Excel export of a report with the same filters (docs/desain-v2.md T6.01). Returns a Blob.
+// report: 'project-profit' and 'stock-value' (Owner/Finance) or 'movements' (every role; Gudang's file has no money).
+export function downloadReport(report, params) {
+  return api(`/reports/${report}/export`, { query: params, responseType: 'blob' });
+}
