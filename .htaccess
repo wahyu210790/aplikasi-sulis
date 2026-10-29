@@ -8,6 +8,16 @@
 Options -Indexes -MultiViews
 DirectoryIndex index.html index.php
 
+# ------------------------------------------------------------------------------
+# SECURITY HEADERS (docs/desain-v2.md B11, T6.04) — on every response, also errors
+# ------------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "same-origin"
+    Header always set X-Frame-Options "DENY"
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
@@ -27,8 +37,8 @@ DirectoryIndex index.html index.php
     # 2a. Block any hidden file or folder (.env, .git, .gitignore, .htaccess, .phpunit, etc.)
     RewriteRule (^|/)\. - [F,L,NC]
 
-    # 2b. Block sensitive config, dependency manifests, documentation, and test scripts at any depth
-    RewriteRule (^|/)(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js|CLAUDE\.md|AGENTS\.md|README\.md|test_role\.php|.*_test\.js|e2e_browser_suite\.js)$ - [F,L,NC]
+    # 2b. Block sensitive config, dependency manifests and documentation at any depth (v2 file names, T6.04)
+    RewriteRule (^|/)(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js|eslint\.config\.js|AGENTS\.md|README\.md)$ - [F,L,NC]
 
     # 2c. Block direct HTTP access to internal directories
     # Note: backend/public/index.php is NOT blocked here so internal API rewrite works,
