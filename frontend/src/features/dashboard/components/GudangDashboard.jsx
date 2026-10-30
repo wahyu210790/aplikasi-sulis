@@ -92,7 +92,7 @@ export function GudangDashboard({ data }) {
           title="Stok menipis"
           padded={false}
           actions={
-            <Link to="/barang" className="text-sm text-primary hover:underline">
+            <Link to="/barang" className="-my-3 inline-block py-3 text-sm text-primary hover:underline">
               Lihat barang
             </Link>
           }

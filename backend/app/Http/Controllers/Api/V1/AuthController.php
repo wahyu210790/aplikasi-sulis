@@ -24,7 +24,12 @@ class AuthController extends Controller
         $user = User::where('email', $request->input('email'))->first();
 
         if (! $user || ! Hash::check($request->input('password'), $user->password)) {
-            $this->audit->log(AuditAction::AUTH_LOGIN_FAILED, null, 'Percobaan masuk gagal untuk email '.$request->input('email'));
+            // The typed text is never stored raw (it can be a typo of something private): a known account is named,
+            // an unknown address is masked. The answer stays the same for both, so nobody learns which emails exist.
+            $summary = $user
+                ? "Percobaan masuk gagal: password salah untuk akun {$user->name}"
+                : 'Percobaan masuk gagal untuk email tidak terdaftar '.self::maskEmail((string) $request->input('email'));
+            $this->audit->log(AuditAction::AUTH_LOGIN_FAILED, $user, $summary);
 
             throw ValidationException::withMessages(['email' => ['Email atau password salah.']]);
         }
@@ -51,6 +56,14 @@ class AuthController extends Controller
                 'user' => (new UserResource($user))->resolve($request),
             ],
         ]);
+    }
+
+    /** "budi.santoso@contoh.co.id" -> "b***@contoh.co.id": first letter and the domain only. */
+    private static function maskEmail(string $email): string
+    {
+        [$local, $domain] = array_pad(explode('@', $email, 2), 2, '');
+
+        return mb_substr($local, 0, 1).'***@'.$domain;
     }
 
     public function logout(Request $request): Response

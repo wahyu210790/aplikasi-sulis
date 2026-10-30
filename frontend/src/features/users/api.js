@@ -2,7 +2,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { api } from '../../lib/api.js';
 
 // Always reloaded when the page opens or the window gets focus again, so a change made in another tab or by
-// another Owner shows up without a manual reload (QA bug #20).
+// another Owner shows up without a manual reload (QA bug #20). While the page stays open it also reloads every
+// 30 seconds, so "Login terakhir" follows logins made elsewhere (not while the browser tab is hidden).
 export function useUsers(params) {
   return useQuery({
     queryKey: ['users', params],
@@ -10,6 +11,7 @@ export function useUsers(params) {
     placeholderData: keepPreviousData,
     refetchOnMount: 'always',
     refetchOnWindowFocus: 'always',
+    refetchInterval: 30_000,
   });
 }
 

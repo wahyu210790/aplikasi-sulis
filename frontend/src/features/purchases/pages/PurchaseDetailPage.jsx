@@ -180,12 +180,14 @@ export default function PurchaseDetailPage() {
             <table className="min-w-full divide-y divide-line text-sm">
               <thead className="bg-canvas">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-muted uppercase">Barang</th>
-                  <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-muted uppercase">Jumlah</th>
+                  <th scope="col" className="px-3 py-3 sm:px-4 text-left text-xs font-semibold text-muted uppercase">Barang</th>
+                  <th scope="col" className="px-3 py-3 sm:px-4 text-right text-xs font-semibold text-muted uppercase">Jumlah</th>
                   {showMoney ? (
                     <>
-                      <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-muted uppercase">Harga satuan</th>
-                      <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-muted uppercase">Subtotal</th>
+                      <th scope="col" className="hidden px-3 py-3 sm:px-4 text-right text-xs font-semibold text-muted uppercase sm:table-cell">
+                        Harga satuan
+                      </th>
+                      <th scope="col" className="px-3 py-3 sm:px-4 text-right text-xs font-semibold text-muted uppercase">Subtotal</th>
                     </>
                   ) : null}
                 </tr>
@@ -193,19 +195,25 @@ export default function PurchaseDetailPage() {
               <tbody className="divide-y divide-line">
                 {item.items.map((line) => (
                   <tr key={line.id}>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 sm:px-4">
                       <div className="text-ink">{line.product.name}</div>
                       <div className="font-mono text-xs text-muted">{line.product.sku}</div>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium">
+                    <td className="px-3 py-3 sm:px-4 text-right font-medium whitespace-nowrap">
                       <Qty value={line.qty} unit={line.product.unit_symbol} />
+                      {/* Narrow screen (QA bug #19): the unit price goes under the quantity instead of its own column. */}
+                      {showMoney ? (
+                        <div className="text-xs font-normal text-muted sm:hidden">
+                          @ <Money value={line.unit_price} />
+                        </div>
+                      ) : null}
                     </td>
                     {showMoney ? (
                       <>
-                        <td className="px-4 py-3 text-right">
+                        <td className="hidden px-3 py-3 sm:px-4 text-right whitespace-nowrap sm:table-cell">
                           <Money value={line.unit_price} />
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-3 py-3 sm:px-4 text-right whitespace-nowrap">
                           <Money value={line.line_total} />
                         </td>
                       </>
@@ -216,8 +224,13 @@ export default function PurchaseDetailPage() {
               {showMoney ? (
                 <tfoot className="bg-canvas">
                   <tr>
-                    <td colSpan={3} className="px-4 py-3 text-right font-semibold text-ink">Total</td>
-                    <td className="px-4 py-3 text-right font-semibold">
+                    <td colSpan={2} className="px-3 py-3 sm:px-4 text-right font-semibold text-ink sm:hidden">
+                      Total
+                    </td>
+                    <td colSpan={3} className="hidden px-3 py-3 sm:px-4 text-right font-semibold text-ink sm:table-cell">
+                      Total
+                    </td>
+                    <td className="px-3 py-3 sm:px-4 text-right font-semibold whitespace-nowrap">
                       <Money value={item.total_value} />
                     </td>
                   </tr>

@@ -117,7 +117,7 @@ export function MoneyDashboard({ data }) {
           title="5 proyek dengan laba tertinggi"
           padded={false}
           actions={
-            <Link to="/laporan?tab=laba" className="text-sm text-primary hover:underline">
+            <Link to="/laporan?tab=laba" className="-my-3 inline-block py-3 text-sm text-primary hover:underline">
               Lihat laporan
             </Link>
           }
@@ -133,7 +133,7 @@ export function MoneyDashboard({ data }) {
           title="10 pergerakan barang terakhir"
           padded={false}
           actions={
-            <Link to="/laporan?tab=pergerakan" className="text-sm text-primary hover:underline">
+            <Link to="/laporan?tab=pergerakan" className="-my-3 inline-block py-3 text-sm text-primary hover:underline">
               Lihat semua
             </Link>
           }

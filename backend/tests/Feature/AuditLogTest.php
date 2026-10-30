@@ -39,8 +39,29 @@ class AuditLogTest extends TestCase
         $log = AuditLog::where('action', AuditAction::AUTH_LOGIN_FAILED)->first();
         $this->assertNotNull($log);
         $this->assertNull($log->user_id);
-        $this->assertStringContainsString('x@sulis.test', $log->summary);
+        $this->assertSame('Percobaan masuk gagal untuk email tidak terdaftar x***@sulis.test', $log->summary);
         $this->assertStringNotContainsString('RahasiaSekali1', json_encode($log->toArray()));
+    }
+
+    public function test_failed_login_never_stores_the_typed_email_raw(): void
+    {
+        $user = User::factory()->create(['name' => 'Rina', 'email' => 'rina@sulis.test']);
+
+        $this->postJson('/api/v1/auth/login', ['email' => 'rina@sulis.test', 'password' => 'SalahKetik9'])
+            ->assertStatus(422)->assertJsonPath('errors.email.0', 'Email atau password salah.');
+        $this->postJson('/api/v1/auth/login', ['email' => 'rahasia.pribadi@contoh.co.id', 'password' => 'SalahKetik9'])
+            ->assertStatus(422)->assertJsonPath('errors.email.0', 'Email atau password salah.');
+        $this->postJson('/api/v1/auth/login', ['email' => 'bukan email', 'password' => 'SalahKetik9'])->assertStatus(422);
+
+        $logs = AuditLog::where('action', AuditAction::AUTH_LOGIN_FAILED)->orderBy('id')->get();
+        $this->assertCount(2, $logs, 'input that is not an email address is refused before anything is logged');
+        $this->assertSame('Percobaan masuk gagal: password salah untuk akun Rina', $logs[0]->summary);
+        $this->assertSame([null, 'user', $user->id], [$logs[0]->user_id, $logs[0]->subject_type, $logs[0]->subject_id]);
+        $this->assertSame('Percobaan masuk gagal untuk email tidak terdaftar r***@contoh.co.id', $logs[1]->summary);
+        $all = json_encode(AuditLog::all()->toArray());
+        foreach (['rahasia.pribadi', 'bukan email', 'SalahKetik9'] as $typed) {
+            $this->assertStringNotContainsString($typed, $all);
+        }
     }
 
     public function test_logout_and_password_change_are_logged(): void
