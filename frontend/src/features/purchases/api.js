@@ -29,7 +29,12 @@ export function useSavePurchase() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...body }) => (id ? api(`/purchases/${id}`, { method: 'PUT', body }) : api('/purchases', { method: 'POST', body })),
-    onSuccess: () => invalidate(queryClient),
+    onSuccess: (data) => {
+      if (data?.data?.id) {
+        queryClient.setQueryData(['purchases', 'detail', String(data.data.id)], data);
+      }
+      invalidate(queryClient);
+    },
   });
 }
 
@@ -41,6 +46,13 @@ export function usePurchaseAction() {
       action === 'delete'
         ? api(`/purchases/${id}`, { method: 'DELETE' })
         : api(`/purchases/${id}/${action}`, { method: 'POST', body: action === 'cancel' ? { reason } : {} }),
-    onSuccess: () => invalidate(queryClient),
+    onSuccess: (data, variables) => {
+      if (data?.data?.id) {
+        queryClient.setQueryData(['purchases', 'detail', String(data.data.id)], data);
+      } else if (variables?.id && variables.action === 'delete') {
+        queryClient.removeQueries({ queryKey: ['purchases', 'detail', String(variables.id)] });
+      }
+      invalidate(queryClient);
+    },
   });
 }

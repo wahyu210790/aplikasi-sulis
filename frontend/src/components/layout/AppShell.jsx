@@ -9,6 +9,7 @@ import { Brand } from './Brand.jsx';
 import { MobileBottomBar } from './MobileBottomBar.jsx';
 import { bottomBarItems } from './NavItems.js';
 import { MobileTopBar } from './MobileTopBar.jsx';
+import { RefreshIndicator } from './RefreshIndicator.jsx';
 import { Sidebar } from './Sidebar.jsx';
 import { SidebarNav } from './SidebarNav.jsx';
 import { SidebarUser } from './SidebarUser.jsx';
@@ -21,6 +22,7 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-canvas">
+      <RefreshIndicator />
       <Sidebar />
 
       <Drawer open={menuOpen} onClose={() => setMenuOpen(false)}>

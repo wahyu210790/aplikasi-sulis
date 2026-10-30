@@ -16,9 +16,12 @@ export function useImportProducts() {
       return api('/imports/products', { method: 'POST', body });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      queryClient.invalidateQueries({ queryKey: ['units'] });
+      queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['categories'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['units'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['movements'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['reports'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'], refetchType: 'all' });
     },
   });
 }
@@ -37,8 +40,11 @@ export function useImportOpeningStocks() {
       return api('/imports/opening-stocks', { method: 'POST', body });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['movements'] });
+      queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['movements'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['stock-transactions'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['reports'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'], refetchType: 'all' });
     },
   });
 }

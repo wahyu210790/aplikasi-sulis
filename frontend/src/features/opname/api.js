@@ -27,7 +27,12 @@ export function useCreateOpname() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body) => api('/stock-opnames', { method: 'POST', body }),
-    onSuccess: () => invalidate(queryClient),
+    onSuccess: (data) => {
+      if (data?.data?.id) {
+        queryClient.setQueryData(['opnames', 'detail', String(data.data.id)], data);
+      }
+      invalidate(queryClient);
+    },
   });
 }
 
@@ -36,7 +41,13 @@ export function useSaveOpnameItems() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, items }) => api(`/stock-opnames/${id}/items`, { method: 'PUT', body: { items } }),
-    onSuccess: () => invalidate(queryClient),
+    onSuccess: (data, variables) => {
+      const id = data?.data?.id ?? variables?.id;
+      if (id && data) {
+        queryClient.setQueryData(['opnames', 'detail', String(id)], data);
+      }
+      invalidate(queryClient);
+    },
   });
 }
 
@@ -46,6 +57,12 @@ export function useOpnameAction() {
   return useMutation({
     mutationFn: ({ id, action, reason }) =>
       api(`/stock-opnames/${id}/${action}`, { method: 'POST', body: action === 'reject' ? { reason } : {} }),
-    onSuccess: () => invalidate(queryClient),
+    onSuccess: (data, variables) => {
+      const id = data?.data?.id ?? variables?.id;
+      if (id && data) {
+        queryClient.setQueryData(['opnames', 'detail', String(id)], data);
+      }
+      invalidate(queryClient);
+    },
   });
 }

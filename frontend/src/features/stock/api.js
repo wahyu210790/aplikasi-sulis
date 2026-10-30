@@ -31,7 +31,12 @@ export function useCreateStockDocument(path) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body) => api(path, { method: 'POST', body }),
-    onSuccess: () => invalidateStock(queryClient),
+    onSuccess: (data) => {
+      if (data?.data?.id) {
+        queryClient.setQueryData(['stock-transactions', 'detail', String(data.data.id)], data);
+      }
+      invalidateStock(queryClient);
+    },
   });
 }
 
@@ -39,7 +44,13 @@ export function useReverseStockTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reason }) => api(`/stock-transactions/${id}/reverse`, { method: 'POST', body: { reason } }),
-    onSuccess: () => invalidateStock(queryClient),
+    onSuccess: (data, variables) => {
+      const id = data?.data?.id ?? variables?.id;
+      if (id && data) {
+        queryClient.setQueryData(['stock-transactions', 'detail', String(id)], data);
+      }
+      invalidateStock(queryClient);
+    },
   });
 }
 
