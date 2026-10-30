@@ -9,6 +9,7 @@ use App\Http\Resources\StockMovementResource;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Support\ApiPaginator;
+use App\Support\Dec;
 use App\Support\ReportExport;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * Ledger views (docs/desain-v2.md B9.2): one product's history and the movements report.
  * Everyone may read; Gudang gets no money keys (B7). Newest first (by id = the order they were written).
  * The movements report can also be downloaded as an Excel file (T6.01); Gudang's file has no money columns.
+ * The file ends with a TOTAL row, like the other report exports (QA bug #6).
  */
 class StockMovementController extends Controller
 {
@@ -47,8 +49,15 @@ class StockMovementController extends Controller
         $rows = [$header];
 
         $query->with(StockMovementResource::RELATIONS)->orderBy('id', 'desc');
+        // TOTAL row (QA bug #6): the sum of "Perubahan Nilai" (Owner/Finance) and, when every row is the same product,
+        // the sum of "Perubahan" (quantities of different products/units cannot be added up).
+        $qtyTotal = '0';
+        $valueTotal = 0;
+        $productIds = [];
         foreach ($query->get() as $movement) {
             $item = (new StockMovementResource($movement))->toArray($request);
+            $qtyTotal = Dec::add($qtyTotal, (string) $item['qty_change'], 3);
+            $productIds[$item['product']['id']] = true;
             $row = [
                 $item['movement_date'], $item['type_label'], $item['product']['sku'], $item['product']['name'], $item['product']['unit_symbol'],
                 ReportExport::number($item['qty_change']), ReportExport::number($item['qty_after']),
@@ -56,10 +65,17 @@ class StockMovementController extends Controller
                 $item['person_name'] ?? '', $item['created_by']['name'] ?? '', $item['notes'] ?? '',
             ];
             if ($seeMoney) {
-                array_push($row, ReportExport::number($item['unit_cost']), (int) $item['value_change'], (int) $item['value_after']);
+                array_push($row, ReportExport::rupiah($item['unit_cost']), (int) $item['value_change'], (int) $item['value_after']);
+                $valueTotal += (int) $item['value_change'];
             }
             $rows[] = $row;
         }
+
+        $total = ['TOTAL', '', '', '', '', count($productIds) === 1 ? ReportExport::number($qtyTotal) : null, null, '', '', '', '', ''];
+        if ($seeMoney) {
+            array_push($total, null, $valueTotal, null);
+        }
+        $rows[] = $total;
 
         return ReportExport::download($rows, 'pergerakan-barang');
     }

@@ -121,22 +121,26 @@ class ReportExportTest extends TestCase
 
         $rows = $this->rows($this->get('/api/v1/reports/movements/export'), 'pergerakan-barang');
         $this->assertSame(['Tanggal', 'Jenis', 'SKU', 'Nama Barang', 'Satuan', 'Perubahan', 'Stok Setelah', 'Dokumen', 'Proyek', 'Pengambil / Pengembali', 'Dicatat Oleh', 'Catatan', 'Harga Satuan', 'Perubahan Nilai', 'Nilai Stok Setelah'], $rows[0]);
-        $this->assertCount(5, $rows);
+        $this->assertCount(6, $rows);
+        // TOTAL: products differ, so no quantity sum; the value changes add up to today's stock value.
+        $this->assertSame(['TOTAL', '', '', '', '', '', '', '', '', '', '', '', '', '2231250', ''], $rows[5]);
         $out = $rows[1];
         $this->assertSame(['2026-10-27', 'Keluar ke Proyek', 'KBL-1', 'Kabel NYM', 'm', '-12.5', '187.5'], array_slice($out, 0, 7));
         $this->assertStringStartsWith('BK-', $out[7]);
         $this->assertSame([$this->projectA->code.' — Gedung A', 'Budi', 'Andi', '11500', '-143750', '2156250'], [$out[8], $out[9], $out[10], $out[12], $out[13], $out[14]]);
 
         $rows = $this->rows($this->get("/api/v1/reports/movements/export?product_id={$this->pipe->id}"), 'pergerakan-barang');
-        $this->assertCount(2, $rows);
+        $this->assertCount(3, $rows);
         $this->assertSame(['Stok Awal', 'PPA-1', '3', '75000'], [$rows[1][1], $rows[1][2], $rows[1][5], $rows[1][13]]);
+        $this->assertSame(['TOTAL', '3', '75000'], [$rows[2][0], $rows[2][5], $rows[2][13]]);
 
         $rows = $this->rows($this->get('/api/v1/reports/movements/export?type=purchase_in&date_from=2026-10-20&date_to=2026-10-20'), 'pergerakan-barang');
-        $this->assertCount(2, $rows);
+        $this->assertCount(3, $rows);
         $this->assertSame(['2026-10-20', 'Pembelian Masuk', '100', '1300000'], [$rows[1][0], $rows[1][1], $rows[1][5], $rows[1][13]]);
 
         $rows = $this->rows($this->get("/api/v1/reports/movements/export?project_id={$this->projectB->id}"), 'pergerakan-barang');
-        $this->assertCount(1, $rows, 'only the header when nothing matches');
+        $this->assertCount(2, $rows, 'only the header and an empty TOTAL when nothing matches');
+        $this->assertSame(['TOTAL', '0'], [$rows[1][0], $rows[1][13]]);
     }
 
     public function test_movements_export_for_gudang_has_no_money(): void
@@ -145,7 +149,8 @@ class ReportExportTest extends TestCase
 
         $rows = $this->rows($this->get('/api/v1/reports/movements/export'), 'pergerakan-barang');
         $this->assertSame(['Tanggal', 'Jenis', 'SKU', 'Nama Barang', 'Satuan', 'Perubahan', 'Stok Setelah', 'Dokumen', 'Proyek', 'Pengambil / Pengembali', 'Dicatat Oleh', 'Catatan'], $rows[0]);
-        $this->assertCount(5, $rows);
+        $this->assertCount(6, $rows);
+        $this->assertSame('TOTAL', $rows[5][0]);
         foreach ($rows as $row) {
             $this->assertCount(12, $row);
             foreach (['11500', '143750', '-143750', '2156250', '1300000', '1000000', '75000', '25000', '13000', '10000'] as $money) {
@@ -157,11 +162,26 @@ class ReportExportTest extends TestCase
         $this->get('/api/v1/reports/stock-value/export')->assertForbidden();
     }
 
+    public function test_rupiah_cells_are_rounded_like_the_screen(): void
+    {
+        // QA bug #22: "12666.6538" was written as is; the screen shows Rp 12.667.
+        $this->assertSame(12667, ReportExport::rupiah('12666.6538'));
+        $this->assertSame(12667, ReportExport::rupiah('12666.5000'));
+        $this->assertSame(12666, ReportExport::rupiah('12666.4999'));
+        $this->assertSame(11500, ReportExport::rupiah('11500'));
+        $this->assertNull(ReportExport::rupiah(null));
+    }
+
     public function test_export_filters_are_validated(): void
     {
         Sanctum::actingAs($this->owner);
 
         $this->getJson('/api/v1/reports/movements/export?date_from=2026-10-27&date_to=2026-10-01')->assertStatus(422)->assertJsonValidationErrors('date_to');
+        // QA bug #8: the message matches the screen check, on every list with a date range.
+        foreach (['/api/v1/reports/movements', '/api/v1/reports/cost-history', '/api/v1/stock-transactions', '/api/v1/purchases', '/api/v1/audit-logs', "/api/v1/products/{$this->pipe->id}/movements"] as $url) {
+            $this->getJson("{$url}?date_from=2026-10-27&date_to=2026-10-01")->assertStatus(422)
+                ->assertJsonPath('errors.date_to.0', 'Tanggal "Sampai" tidak boleh sebelum tanggal "Dari".');
+        }
         $this->getJson('/api/v1/reports/project-profit/export?status=hilang')->assertStatus(422)->assertJsonValidationErrors('status');
         $this->getJson('/api/v1/reports/movements/export?type=apa')->assertStatus(422)->assertJsonValidationErrors('type');
     }

@@ -39,4 +39,17 @@ final class ReportExport
 
         return floor($number) === $number ? (int) $number : $number;
     }
+
+    /**
+     * A rupiah amount with decimals from the database (avg_cost "12666.6538", unit_cost "12666.5000") as a whole-rupiah
+     * cell, rounded the same way as the screen shows it (Rp 12.667). QA bug #22. Null stays empty.
+     */
+    public static function rupiah(?string $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return Dec::roundRupiah($value);
+    }
 }

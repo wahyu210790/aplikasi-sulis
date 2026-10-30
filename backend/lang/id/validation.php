@@ -68,7 +68,12 @@ return [
     'unique' => ':Attribute sudah digunakan.',
     'uploaded' => ':Attribute gagal diunggah.',
 
-    'custom' => [],
+    // QA bug #8: the same words as the screen check (frontend lib/dateRange.js), not the generic after_or_equal text.
+    'custom' => [
+        'date_to' => [
+            'after_or_equal' => 'Tanggal "Sampai" tidak boleh sebelum tanggal "Dari".',
+        ],
+    ],
 
     // Indonesian names for request fields. Later tasks ADD entries here (never remove).
     'attributes' => [

@@ -59,6 +59,19 @@ class MovementReportTest extends TestCase
         $this->postJson("/api/v1/purchases/{$purchaseId}/cancel", ['reason' => 'Barang salah kirim'])->assertOk();
     }
 
+    public function test_gudang_gets_no_link_to_a_cancelled_purchase(): void
+    {
+        $ownerRows = $this->getJson('/api/v1/reports/movements')->json('data');
+        $this->assertIsInt($ownerRows[0]['document']['id']);
+
+        Sanctum::actingAs($this->gudang);
+        $rows = $this->getJson('/api/v1/reports/movements')->assertOk()->json('data');
+        $this->assertSame(['purchase', null, 'PB-000001'], [$rows[0]['document']['kind'], $rows[0]['document']['id'], $rows[0]['document']['number']]);
+        $this->assertSame(['purchase', null], [$rows[2]['document']['kind'], $rows[2]['document']['id']]);
+        $this->assertIsInt($rows[1]['document']['id'], 'other documents keep their link');
+        $this->getJson("/api/v1/purchases/{$ownerRows[0]['document']['id']}")->assertNotFound();
+    }
+
     public function test_report_lists_every_movement_newest_first_with_its_document(): void
     {
         $rows = $this->getJson('/api/v1/reports/movements')->assertOk()->assertJsonPath('meta.total', 4)->json('data');

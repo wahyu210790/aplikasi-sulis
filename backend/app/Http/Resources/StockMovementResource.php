@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\PurchaseStatus;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -14,6 +15,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *   {"kind": "stock_transaction", "id": 12, "number": "BK-000012"}, {"kind": "purchase", "id": 3, "number": "PB-000003"}
  *   or {"kind": "stock_opname", "id": 2, "number": "SO-000002"}.
  * A reversal points to the same document as the movement it cancels.
+ * Gudang cannot open a cancelled purchase (404), so its id is null there and the screen shows the number
+ * without a link (QA bug #17).
  *
  * @mixin StockMovement
  */
@@ -47,7 +50,7 @@ class StockMovementResource extends JsonResource
             'project' => $this->whenLoaded('project', fn () => $this->project
                 ? ['id' => $this->project->id, 'code' => $this->project->code, 'name' => $this->project->name]
                 : null),
-            'document' => $this->document(),
+            'document' => $this->document($seeMoney),
             'person_name' => $this->relationLoaded('stockTransaction') ? $this->stockTransaction?->person_name : null,
             'reverses_movement_id' => $this->reverses_movement_id,
             'movement_date' => $this->movement_date->toDateString(),
@@ -57,7 +60,7 @@ class StockMovementResource extends JsonResource
         ];
     }
 
-    private function document(): ?array
+    private function document(bool $seeMoney): ?array
     {
         if ($this->relationLoaded('stockTransaction') && $this->stockTransaction) {
             return ['kind' => 'stock_transaction', 'id' => $this->stockTransaction->id, 'number' => $this->stockTransaction->number];
@@ -72,6 +75,11 @@ class StockMovementResource extends JsonResource
         $source = $this->relationLoaded('reverses') && $this->reverses ? $this->reverses : $this->resource;
         $purchase = $source->relationLoaded('purchaseItem') ? $source->purchaseItem?->purchase : null;
 
-        return $purchase ? ['kind' => 'purchase', 'id' => $purchase->id, 'number' => $purchase->number] : null;
+        if (! $purchase) {
+            return null;
+        }
+        $hidden = ! $seeMoney && $purchase->status === PurchaseStatus::Batal;
+
+        return ['kind' => 'purchase', 'id' => $hidden ? null : $purchase->id, 'number' => $purchase->number];
     }
 }

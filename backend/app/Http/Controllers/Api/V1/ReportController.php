@@ -159,7 +159,7 @@ class ReportController extends Controller
             $balance = $product->stockBalance;
             $rows[] = [
                 $product->sku, $product->name, $product->category->name, $product->unit->symbol,
-                ReportExport::number($balance->qty), ReportExport::number($balance->avg_cost), (int) $balance->stock_value,
+                ReportExport::number($balance->qty), ReportExport::rupiah($balance->avg_cost), (int) $balance->stock_value,
                 $balance->has_cost ? 'Ya' : 'Belum', $product->is_active ? 'Aktif' : 'Nonaktif',
             ];
             $total += (int) $balance->stock_value;
