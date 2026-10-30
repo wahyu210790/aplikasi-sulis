@@ -1,4 +1,6 @@
 // The ONLY place that calls fetch(). docs/desain-v2.md B9.1 + B12.3.
+import { needsRequestKey, newRequestKey } from './requestKey.js';
+
 const BASE_URL = '/api/v1';
 export const TOKEN_KEY = 'sulis_token';
 
@@ -50,6 +52,8 @@ export async function api(path, { method = 'GET', body, query, responseType = 'j
   if (token) headers.Authorization = `Bearer ${token}`;
   const isForm = body instanceof FormData;
   if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
+  // One key per call: if the network sends this same request twice, the server saves it once (QA bug #2).
+  if (needsRequestKey(method, path)) headers['Idempotency-Key'] = newRequestKey();
 
   let response;
   try {

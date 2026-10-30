@@ -3,6 +3,7 @@ import { Button } from '../../../components/ui/Button.jsx';
 import { FormField } from '../../../components/ui/FormField.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
 import { Modal } from '../../../components/ui/Modal.jsx';
+import { PasswordInput } from '../../../components/ui/PasswordInput.jsx';
 import { Select } from '../../../components/ui/Select.jsx';
 import { Switch } from '../../../components/ui/Switch.jsx';
 import { useToast } from '../../../components/ui/useToast.js';
@@ -87,7 +88,7 @@ export function UserFormModal({ open, onClose, user, isSelf }) {
           )
         ) : (
           <FormField label="Password awal" htmlFor="user-password" required error={errors.password} hint="Minimal 8 karakter, berisi huruf dan angka.">
-            <Input id="user-password" type="text" autoComplete="new-password" value={form.password} onChange={(e) => set('password', e.target.value)} invalid={Boolean(errors.password)} />
+            <PasswordInput id="user-password" autoComplete="new-password" value={form.password} onChange={(e) => set('password', e.target.value)} invalid={Boolean(errors.password)} />
           </FormField>
         )}
       </form>
