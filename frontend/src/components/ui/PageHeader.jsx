@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 
 // breadcrumb: [{ label, to }] — the last item is the current page (no link needed).
+// Each link has a 44 px high tap area (padding with a matching negative margin, so the layout stays the same; QA bug #14).
 export function PageHeader({ title, subtitle, actions, breadcrumb }) {
   return (
     <div className="mb-6">
@@ -11,7 +12,7 @@ export function PageHeader({ title, subtitle, actions, breadcrumb }) {
             <span key={item.label} className="inline-flex items-center gap-1">
               {index > 0 ? <ChevronRight aria-hidden="true" className="h-3.5 w-3.5" /> : null}
               {item.to ? (
-                <Link to={item.to} className="hover:text-ink hover:underline">
+                <Link to={item.to} className="-my-3.5 inline-block py-3.5 hover:text-ink hover:underline">
                   {item.label}
                 </Link>
               ) : (
