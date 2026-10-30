@@ -75,7 +75,7 @@ class UnitController extends Controller
             $after = $this->snapshot($unit);
 
             if ($before !== $after) {
-                $this->audit->log(AuditAction::UNIT_UPDATED, $unit, "Mengubah satuan {$unit->name} ({$unit->symbol})", $before, $after);
+                $this->audit->log(AuditAction::UNIT_UPDATED, $unit, AuditLogger::editVerb($before, $after)." satuan {$unit->name} ({$unit->symbol})", $before, $after);
             }
         });
 

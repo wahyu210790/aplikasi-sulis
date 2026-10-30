@@ -79,7 +79,7 @@ class SupplierController extends Controller
             $after = $this->snapshot($supplier);
 
             if ($before !== $after) {
-                $this->audit->log(AuditAction::SUPPLIER_UPDATED, $supplier, "Mengubah pemasok {$supplier->name}", $before, $after);
+                $this->audit->log(AuditAction::SUPPLIER_UPDATED, $supplier, AuditLogger::editVerb($before, $after)." pemasok {$supplier->name}", $before, $after);
             }
         });
 

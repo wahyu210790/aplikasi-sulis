@@ -1,47 +1,52 @@
+import { useState } from 'react';
 import { Modal } from '../../../components/ui/Modal.jsx';
-import { ROLE_LABELS } from '../../../lib/constants.js';
 import { cn } from '../../../lib/cn.js';
 import { formatDateTime } from '../../../lib/format.js';
+import { actorName, changeRows } from '../fields.js';
 import { actionLabel } from '../labels.js';
 
-// Shows a value from changes.before / changes.after as plain text (lists and objects as JSON).
-function show(value) {
-  if (value === undefined || value === null || value === '') return '–';
-  if (typeof value === 'boolean') return value ? 'ya' : 'tidak';
-  if (typeof value === 'object') return JSON.stringify(value, null, 1);
-  return String(value);
-}
-
-// Before/after table: one row per field, changed fields highlighted.
+// Before/after table with Indonesian field names. An edit lists only the changed fields (QA bug #10);
+// "Tampilkan semua data" also lists the unchanged ones.
 function ChangesTable({ changes }) {
-  const before = changes?.before ?? {};
-  const after = changes?.after ?? {};
-  const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])];
-  if (keys.length === 0) return <p className="text-sm text-muted">Tidak ada rincian perubahan.</p>;
+  const [showAll, setShowAll] = useState(false);
+  const { rows, hasBefore, total } = changeRows(changes, { showAll });
+  if (total === 0) return <p className="text-sm text-muted">Tidak ada rincian perubahan.</p>;
 
   return (
-    <div className="overflow-x-auto rounded-control border border-line">
-      <table className="min-w-full divide-y divide-line text-sm">
-        <thead className="bg-canvas">
-          <tr>
-            <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-muted uppercase">Data</th>
-            <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-muted uppercase">Sebelum</th>
-            <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-muted uppercase">Sesudah</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-line">
-          {keys.map((key) => {
-            const changed = JSON.stringify(before[key]) !== JSON.stringify(after[key]);
-            return (
-              <tr key={key} className={cn(changed && 'bg-warning-soft')}>
-                <td className="px-3 py-2 align-top font-mono text-xs text-muted">{key}</td>
-                <td className="max-w-[16rem] px-3 py-2 align-top break-words whitespace-pre-wrap">{show(before[key])}</td>
-                <td className="max-w-[16rem] px-3 py-2 align-top break-words whitespace-pre-wrap">{show(after[key])}</td>
+    <div className="space-y-2">
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted">Tidak ada data yang berubah.</p>
+      ) : (
+        <div className="overflow-x-auto rounded-control border border-line">
+          <table className="min-w-full divide-y divide-line text-sm">
+            <thead className="bg-canvas">
+              <tr>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-muted uppercase">Data</th>
+                {hasBefore ? <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-muted uppercase">Sebelum</th> : null}
+                <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-muted uppercase">{hasBefore ? 'Sesudah' : 'Isi'}</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {rows.map((row) => (
+                <tr key={row.key} className={cn(showAll && row.changed && 'bg-warning-soft')}>
+                  <td className="px-3 py-2 align-top text-muted">{row.label}</td>
+                  {hasBefore ? <td className="max-w-[16rem] px-3 py-2 align-top break-words whitespace-pre-wrap">{row.before}</td> : null}
+                  <td className="max-w-[16rem] px-3 py-2 align-top break-words whitespace-pre-wrap">{row.after}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {hasBefore && total > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowAll((value) => !value)}
+          className="min-h-11 text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          {showAll ? 'Tampilkan yang berubah saja' : 'Tampilkan semua data'}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -58,18 +63,14 @@ export function AuditLogDetailModal({ log, onClose }) {
             </div>
             <div>
               <dt className="text-muted">Pengguna</dt>
-              <dd className="mt-1 font-medium text-ink">{log.user ? `${log.user.name} (${ROLE_LABELS[log.user.role] ?? log.user.role})` : '–'}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Kode aktivitas</dt>
-              <dd className="mt-1 font-mono text-xs text-ink">{log.action}</dd>
+              <dd className="mt-1 font-medium text-ink">{actorName(log.user)}</dd>
             </div>
             <div>
               <dt className="text-muted">Alamat IP</dt>
               <dd className="mt-1 font-mono text-xs text-ink">{log.ip || '–'}</dd>
             </div>
           </dl>
-          <ChangesTable changes={log.changes} />
+          <ChangesTable key={log.id} changes={log.changes} />
         </div>
       ) : null}
     </Modal>

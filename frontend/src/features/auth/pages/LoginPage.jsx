@@ -8,7 +8,7 @@ import { Input } from '../../../components/ui/Input.jsx';
 import { FullPageSpinner } from '../../../components/layout/FullPageSpinner.jsx';
 
 export default function LoginPage() {
-  const { status, login } = useAuth();
+  const { status, sessionEnded, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -22,7 +22,7 @@ export default function LoginPage() {
   if (status === 'loading') return <FullPageSpinner />;
   if (status === 'authenticated') return <Navigate to="/" replace />;
 
-  const sessionExpired = searchParams.get('alasan') === 'sesi';
+  const sessionExpired = sessionEnded || searchParams.get('alasan') === 'sesi';
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -73,7 +73,7 @@ export default function LoginPage() {
           {sessionExpired && !serverError ? (
             <div className="mt-6 flex items-start gap-2 rounded-control bg-info-soft px-3 py-2.5 text-sm text-info">
               <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-              Sesi Anda telah berakhir. Silakan masuk kembali.
+              Sesi Anda telah berakhir atau akun Anda dinonaktifkan. Silakan masuk kembali.
             </div>
           ) : null}
 

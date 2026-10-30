@@ -53,7 +53,7 @@ export default function AuditLogPage() {
             <div className="text-xs text-muted">{ROLE_LABELS[row.user.role] ?? row.user.role}</div>
           </div>
         ) : (
-          <span className="text-muted">–</span>
+          <span className="text-muted">Sistem</span>
         ),
     },
     {

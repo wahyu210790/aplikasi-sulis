@@ -40,4 +40,19 @@ class AuditLogger
             'ip' => request()?->ip(),
         ]);
     }
+
+    /**
+     * The verb for an "updated" summary (QA bug #11): when only is_active changed it says what really happened
+     * ("Menonaktifkan" / "Mengaktifkan") instead of "Mengubah".
+     */
+    public static function editVerb(array $before, array $after): string
+    {
+        $changed = array_keys(array_filter($after, fn ($value, $key) => ($before[$key] ?? null) !== $value, ARRAY_FILTER_USE_BOTH));
+
+        if ($changed === ['is_active']) {
+            return $after['is_active'] ? 'Mengaktifkan' : 'Menonaktifkan';
+        }
+
+        return 'Mengubah';
+    }
 }

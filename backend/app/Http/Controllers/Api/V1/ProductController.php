@@ -93,7 +93,7 @@ class ProductController extends Controller
             $after = $this->snapshot($product->fresh());
 
             if ($before !== $after) {
-                $this->audit->log(AuditAction::PRODUCT_UPDATED, $product, "Mengubah barang {$product->sku} {$product->name}", $before, $after);
+                $this->audit->log(AuditAction::PRODUCT_UPDATED, $product, AuditLogger::editVerb($before, $after)." barang {$product->sku} {$product->name}", $before, $after);
             }
         });
 

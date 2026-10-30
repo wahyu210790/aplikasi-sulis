@@ -30,6 +30,9 @@ class AuthController extends Controller
         }
 
         if (! $user->is_active) {
+            // QA bug #11: a refused login of a deactivated account is recorded too (the password was right).
+            $this->audit->log(AuditAction::AUTH_LOGIN_FAILED, $user, "Percobaan masuk ditolak: akun {$user->name} dinonaktifkan", actor: $user);
+
             return response()->json(['message' => 'Akun Anda dinonaktifkan. Hubungi Owner.'], 403);
         }
 

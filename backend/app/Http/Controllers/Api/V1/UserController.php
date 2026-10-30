@@ -101,7 +101,7 @@ class UserController extends Controller
 
             if ($wasActive && ! $newActive) {
                 $user->tokens()->delete();
-                $this->audit->log(AuditAction::USER_DEACTIVATED, $user, "Menonaktifkan pengguna {$user->name}");
+                $this->audit->log(AuditAction::USER_DEACTIVATED, $user, "Menonaktifkan pengguna {$user->name}; semua sesi masuknya diakhiri");
             } elseif (! $wasActive && $newActive) {
                 $this->audit->log(AuditAction::USER_ACTIVATED, $user, "Mengaktifkan pengguna {$user->name}");
             }

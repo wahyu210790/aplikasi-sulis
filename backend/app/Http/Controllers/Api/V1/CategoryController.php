@@ -68,7 +68,7 @@ class CategoryController extends Controller
             $after = $this->snapshot($category);
 
             if ($before !== $after) {
-                $this->audit->log(AuditAction::CATEGORY_UPDATED, $category, "Mengubah kategori {$category->name}", $before, $after);
+                $this->audit->log(AuditAction::CATEGORY_UPDATED, $category, AuditLogger::editVerb($before, $after)." kategori {$category->name}", $before, $after);
             }
         });
 
