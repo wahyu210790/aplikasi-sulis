@@ -5,7 +5,7 @@ import { Input } from '../../../components/ui/Input.jsx';
 import { Modal } from '../../../components/ui/Modal.jsx';
 import { Switch } from '../../../components/ui/Switch.jsx';
 import { useToast } from '../../../components/ui/useToast.js';
-import { fieldErrors } from '../../../lib/formErrors.js';
+import { fieldErrors, withoutError } from '../../../lib/formErrors.js';
 import { useSaveUnit } from '../api.js';
 
 // unit = null -> "Tambah Satuan"; object -> "Ubah Satuan". Render with key={unit?.id ?? 'new'}.
@@ -17,8 +17,10 @@ export function UnitFormModal({ open, onClose, unit }) {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
 
+  // Changing a field also hides its old error message (QA bug #12).
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    setErrors((current) => withoutError(current, field));
   }
 
   async function handleSubmit(event) {

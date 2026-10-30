@@ -6,7 +6,7 @@ import { Modal } from '../../../components/ui/Modal.jsx';
 import { Switch } from '../../../components/ui/Switch.jsx';
 import { Textarea } from '../../../components/ui/Textarea.jsx';
 import { useToast } from '../../../components/ui/useToast.js';
-import { fieldErrors } from '../../../lib/formErrors.js';
+import { fieldErrors, withoutError } from '../../../lib/formErrors.js';
 import { useSaveSupplier } from '../api.js';
 
 // supplier = null -> "Tambah Pemasok"; object -> "Ubah Pemasok". Render with key={supplier?.id ?? 'new'}.
@@ -24,8 +24,10 @@ export function SupplierFormModal({ open, onClose, supplier }) {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
 
+  // Changing a field also hides its old error message (QA bug #12).
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    setErrors((current) => withoutError(current, field));
   }
 
   async function handleSubmit(event) {

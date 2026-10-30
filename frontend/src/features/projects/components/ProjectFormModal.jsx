@@ -8,7 +8,7 @@ import { MoneyInput } from '../../../components/ui/MoneyInput.jsx';
 import { Select } from '../../../components/ui/Select.jsx';
 import { Textarea } from '../../../components/ui/Textarea.jsx';
 import { useToast } from '../../../components/ui/useToast.js';
-import { fieldErrors } from '../../../lib/formErrors.js';
+import { fieldErrors, withoutError } from '../../../lib/formErrors.js';
 import { useSaveProject } from '../api.js';
 
 const STATUS_OPTIONS = [
@@ -37,8 +37,10 @@ export function ProjectFormModal({ open, onClose, project }) {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
 
+  // Changing a field also hides its old error message (QA bug #12).
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    setErrors((current) => withoutError(current, field));
   }
 
   async function handleSubmit(event) {

@@ -9,8 +9,9 @@ import { MOVEMENT_TYPES } from '../../../lib/constants.js';
 import { formatDate, formatQty } from '../../../lib/format.js';
 
 // Link to the document page behind a movement (BK- / RT- / PB- / SO- numbers), or null.
+// No id (a cancelled purchase for Gudang, QA bug #17): the number is shown without a link.
 function documentPath(document) {
-  if (!document) return null;
+  if (!document?.id) return null;
   if (document.kind === 'purchase') return `/pembelian/${document.id}`;
   if (document.kind === 'stock_opname') return `/stok-opname/${document.id}`;
   return document.number.startsWith('RT-') ? `/pengembalian/${document.id}` : `/barang-keluar/${document.id}`;
@@ -39,6 +40,8 @@ export function MovementsTable({ rows, loading, unit, showMoney, filtered = fals
           <Link to={path} className="font-mono text-primary hover:underline">
             {row.document.number}
           </Link>
+        ) : row.document ? (
+          <span className="font-mono text-muted">{row.document.number}</span>
         ) : (
           <span className="text-muted">–</span>
         );

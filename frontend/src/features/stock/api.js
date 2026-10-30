@@ -11,11 +11,13 @@ function invalidateStock(queryClient) {
   );
 }
 
-export function useStockTransactions(params) {
+// enabled false: nothing is loaded (e.g. while the date filter is wrong).
+export function useStockTransactions(params, { enabled = true } = {}) {
   return useQuery({
     queryKey: ['stock-transactions', params],
     queryFn: () => api('/stock-transactions', { query: params }),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 
@@ -63,11 +65,12 @@ export function useIssuedItems(projectId) {
   });
 }
 
-export function useProductMovements(productId, params) {
+export function useProductMovements(productId, params, { enabled = true } = {}) {
   return useQuery({
     queryKey: ['movements', 'product', String(productId), params],
     queryFn: () => api(`/products/${productId}/movements`, { query: params }),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 

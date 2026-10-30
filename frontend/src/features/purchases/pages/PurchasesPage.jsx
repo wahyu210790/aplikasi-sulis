@@ -21,7 +21,7 @@ const STATUS_FILTER = [
   { value: '', label: 'Semua status' },
   { value: 'draft', label: 'Draft' },
   { value: 'diterima', label: 'Diterima' },
-  { value: 'batal', label: 'Batal' },
+  { value: 'batal', label: 'Dibatalkan' },
 ];
 
 export default function PurchasesPage() {

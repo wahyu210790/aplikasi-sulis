@@ -21,10 +21,11 @@ export const STATUS = {
     selesai: { label: 'Selesai', tone: 'info' },
     batal: { label: 'Batal', tone: 'danger' },
   },
+  // Documents say "Dibatalkan", like stock transactions (QA bug #15). A project keeps "Batal" (a project state).
   purchase: {
     draft: { label: 'Draft', tone: 'warning' },
     diterima: { label: 'Diterima', tone: 'success' },
-    batal: { label: 'Batal', tone: 'danger' },
+    batal: { label: 'Dibatalkan', tone: 'danger' },
   },
   stock_transaction: {
     posted: { label: 'Tercatat', tone: 'success' },
@@ -34,7 +35,7 @@ export const STATUS = {
     draft: { label: 'Draft', tone: 'warning' },
     menunggu_persetujuan: { label: 'Menunggu Persetujuan', tone: 'warning' },
     selesai: { label: 'Selesai', tone: 'success' },
-    batal: { label: 'Batal', tone: 'danger' },
+    batal: { label: 'Dibatalkan', tone: 'danger' },
   },
 };
 

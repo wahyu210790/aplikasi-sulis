@@ -31,11 +31,12 @@ export function useMovementsReport(params, { enabled = true } = {}) {
   });
 }
 
-export function useCostHistory(params) {
+export function useCostHistory(params, { enabled = true } = {}) {
   return useQuery({
     queryKey: ['reports', 'cost-history', params],
     queryFn: () => api('/reports/cost-history', { query: params }),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 

@@ -9,7 +9,7 @@ import { Switch } from '../../../components/ui/Switch.jsx';
 import { Textarea } from '../../../components/ui/Textarea.jsx';
 import { useToast } from '../../../components/ui/useToast.js';
 import { formatQty, parseQty } from '../../../lib/format.js';
-import { fieldErrors } from '../../../lib/formErrors.js';
+import { fieldErrors, withoutError } from '../../../lib/formErrors.js';
 import { useCategories, useUnits } from '../../master/api.js';
 import { useSaveProduct } from '../api.js';
 
@@ -52,8 +52,10 @@ export function ProductFormModal({ open, onClose, product, onSaved }) {
     toOption(product?.unit, product?.unit.symbol),
   );
 
+  // Changing a field also hides its old error message (QA bug #12).
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    setErrors((current) => withoutError(current, field));
   }
 
   async function handleSubmit(event) {

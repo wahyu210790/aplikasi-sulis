@@ -1,11 +1,15 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api.js';
 
+// Always reloaded when the page opens or the window gets focus again, so a change made in another tab or by
+// another Owner shows up without a manual reload (QA bug #20).
 export function useUsers(params) {
   return useQuery({
     queryKey: ['users', params],
     queryFn: () => api('/users', { query: params }),
     placeholderData: keepPreviousData,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
   });
 }
 

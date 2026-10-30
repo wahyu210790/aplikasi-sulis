@@ -8,7 +8,7 @@ import { Select } from '../../../components/ui/Select.jsx';
 import { Switch } from '../../../components/ui/Switch.jsx';
 import { useToast } from '../../../components/ui/useToast.js';
 import { ROLE_OPTIONS } from '../../../lib/constants.js';
-import { fieldErrors } from '../../../lib/formErrors.js';
+import { fieldErrors, withoutError } from '../../../lib/formErrors.js';
 import { useCreateUser, useUpdateUser } from '../api.js';
 
 // user = null -> "Tambah Pengguna"; user = object -> "Ubah Pengguna". isSelf = editing your own account.
@@ -29,8 +29,10 @@ export function UserFormModal({ open, onClose, user, isSelf }) {
   const [formError, setFormError] = useState('');
   const saving = createUser.isPending || updateUser.isPending;
 
+  // Changing a field also hides its old error message (QA bug #12).
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    setErrors((current) => withoutError(current, field));
   }
 
   async function handleSubmit(event) {

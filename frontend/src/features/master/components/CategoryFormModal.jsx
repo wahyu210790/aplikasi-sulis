@@ -5,7 +5,7 @@ import { Input } from '../../../components/ui/Input.jsx';
 import { Modal } from '../../../components/ui/Modal.jsx';
 import { Switch } from '../../../components/ui/Switch.jsx';
 import { useToast } from '../../../components/ui/useToast.js';
-import { fieldErrors } from '../../../lib/formErrors.js';
+import { fieldErrors, withoutError } from '../../../lib/formErrors.js';
 import { useSaveCategory } from '../api.js';
 
 // category = null -> "Tambah Kategori"; object -> "Ubah Kategori". Render with key={category?.id ?? 'new'}.
@@ -17,8 +17,10 @@ export function CategoryFormModal({ open, onClose, category }) {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
 
+  // Changing a field also hides its old error message (QA bug #12).
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    setErrors((current) => withoutError(current, field));
   }
 
   async function handleSubmit(event) {

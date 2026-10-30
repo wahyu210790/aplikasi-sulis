@@ -22,7 +22,7 @@ const STATUS_FILTER = [
   { value: 'draft', label: 'Draft' },
   { value: 'menunggu_persetujuan', label: 'Menunggu Persetujuan' },
   { value: 'selesai', label: 'Selesai' },
-  { value: 'batal', label: 'Batal' },
+  { value: 'batal', label: 'Dibatalkan' },
 ];
 
 export default function OpnamesPage() {

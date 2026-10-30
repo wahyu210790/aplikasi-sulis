@@ -16,6 +16,7 @@ import { Select } from '../../../components/ui/Select.jsx';
 import { StatusBadge } from '../../../components/ui/StatusBadge.jsx';
 import { formatDate } from '../../../lib/format.js';
 import { can, canSeeMoney } from '../../../lib/permissions.js';
+import { dateRangeError } from '../../../lib/dateRange.js';
 import { useStockTransactions } from '../api.js';
 import { DOC_TYPES } from '../docTypes.js';
 
@@ -37,7 +38,9 @@ export default function StockTransactionsPage({ type }) {
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
 
-  const list = useStockTransactions({ type, search, status, date_from: dateFrom, date_to: dateTo, page, per_page: 20 });
+  // A "Sampai" date before "Dari": message next to the filters, nothing is loaded (QA bug #8).
+  const rangeError = dateRangeError(dateFrom, dateTo);
+  const list = useStockTransactions({ type, search, status, date_from: dateFrom, date_to: dateTo, page, per_page: 20 }, { enabled: !rangeError });
 
   function changeFilter(setter) {
     return (value) => {
@@ -97,12 +100,30 @@ export default function StockTransactionsPage({ type }) {
           <Select value={status} onChange={changeFilter(setStatus)} options={STATUS_FILTER} />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-          <DateInput value={dateFrom} onChange={changeFilter(setDateFrom)} aria-label="Dari tanggal" className="sm:w-40" />
-          <DateInput value={dateTo} onChange={changeFilter(setDateTo)} aria-label="Sampai tanggal" className="sm:w-40" />
+          <DateInput
+            value={dateFrom}
+            onChange={changeFilter(setDateFrom)}
+            max={dateTo || undefined}
+            invalid={Boolean(rangeError)}
+            aria-label="Dari tanggal"
+            className="sm:w-40"
+          />
+          <DateInput
+            value={dateTo}
+            onChange={changeFilter(setDateTo)}
+            min={dateFrom || undefined}
+            invalid={Boolean(rangeError)}
+            aria-label="Sampai tanggal"
+            className="sm:w-40"
+          />
         </div>
       </FilterBar>
 
-      {list.isError ? (
+      {rangeError ? (
+        <p role="alert" className="rounded-card border border-line bg-danger-soft px-4 py-3 text-sm text-danger">
+          {rangeError}
+        </p>
+      ) : list.isError ? (
         <div className="rounded-card border border-line bg-surface shadow-sm">
           <ErrorState message={list.error.message} onRetry={() => list.refetch()} />
         </div>

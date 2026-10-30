@@ -16,6 +16,7 @@ import { StatCard } from '../../../components/ui/StatCard.jsx';
 import { StatusBadge } from '../../../components/ui/StatusBadge.jsx';
 import { Tabs } from '../../../components/ui/Tabs.jsx';
 import { MOVEMENT_TYPES } from '../../../lib/constants.js';
+import { dateRangeError } from '../../../lib/dateRange.js';
 import { formatQty, formatRupiah } from '../../../lib/format.js';
 import { can, canSeeMoney } from '../../../lib/permissions.js';
 import { useProductCostHistory } from '../../reports/api.js';
@@ -33,7 +34,9 @@ function MovementHistory({ productId, unit, showMoney }) {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
-  const movements = useProductMovements(productId, { type, date_from: dateFrom, date_to: dateTo, page, per_page: 20 });
+  // A "Sampai" date before "Dari": message next to the filters, nothing is loaded (QA bug #8).
+  const rangeError = dateRangeError(dateFrom, dateTo);
+  const movements = useProductMovements(productId, { type, date_from: dateFrom, date_to: dateTo, page, per_page: 20 }, { enabled: !rangeError });
 
   function changeFilter(setter) {
     return (value) => {
@@ -49,11 +52,29 @@ function MovementHistory({ productId, unit, showMoney }) {
           <Select value={type} onChange={changeFilter(setType)} options={TYPE_FILTER} />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-          <DateInput value={dateFrom} onChange={changeFilter(setDateFrom)} aria-label="Dari tanggal" className="sm:w-40" />
-          <DateInput value={dateTo} onChange={changeFilter(setDateTo)} aria-label="Sampai tanggal" className="sm:w-40" />
+          <DateInput
+            value={dateFrom}
+            onChange={changeFilter(setDateFrom)}
+            max={dateTo || undefined}
+            invalid={Boolean(rangeError)}
+            aria-label="Dari tanggal"
+            className="sm:w-40"
+          />
+          <DateInput
+            value={dateTo}
+            onChange={changeFilter(setDateTo)}
+            min={dateFrom || undefined}
+            invalid={Boolean(rangeError)}
+            aria-label="Sampai tanggal"
+            className="sm:w-40"
+          />
         </div>
       </FilterBar>
-      {movements.isError ? (
+      {rangeError ? (
+        <p role="alert" className="rounded-card border border-line bg-danger-soft px-4 py-3 text-sm text-danger">
+          {rangeError}
+        </p>
+      ) : movements.isError ? (
         <div className="rounded-card border border-line bg-surface shadow-sm">
           <ErrorState message={movements.error.message} onRetry={() => movements.refetch()} />
         </div>
