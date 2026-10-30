@@ -118,7 +118,8 @@ cd $APP/backend
 $PHP artisan app:create-owner
 ~~~
 
-Perintah ini menanyakan nama, email dan password (minimal 8 karakter, ada huruf dan angka). Pengguna lain dibuat
+Perintah ini menanyakan nama, email dan password (minimal 8 karakter, ada huruf dan angka). Password diketik
+tersembunyi dan tidak bisa diberikan sebagai opsi, jadi tidak tersimpan di riwayat shell. Pengguna lain dibuat
 oleh Owner dari menu **Pengguna** di aplikasi.
 
 ## 9. Cache Laravel
@@ -128,7 +129,11 @@ cd $APP/backend
 $PHP artisan config:cache
 $PHP artisan route:cache
 $PHP artisan event:cache
+$PHP artisan app:check-production
 ~~~
+
+`app:check-production` hanya membaca (tidak mengubah apa pun). Semua baris harus `[OK]`. Kalau ada `[GAGAL]`,
+perbaiki `.env` lalu ulangi `config:cache` dan pemeriksaan ini sebelum lanjut.
 
 ## 10. Upload frontend
 
