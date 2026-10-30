@@ -118,7 +118,7 @@ class OpnameFlowTest extends TestCase
         $this->assertSame(['13.000', 130000], $this->balance($this->pipe));
 
         $out = StockMovement::where('type', MovementType::OpnameOut)->sole();
-        $this->assertSame([$this->cable->id, '-3.000', -34500, '2026-10-27', 'Stock opname SO-'.str_pad((string) $id, 6, '0', STR_PAD_LEFT)],
+        $this->assertSame([$this->cable->id, '-3.000', -34500, '2026-10-27', 'Stok opname SO-'.str_pad((string) $id, 6, '0', STR_PAD_LEFT)],
             [$out->product_id, $out->qty_change, $out->value_change, $out->movement_date->toDateString(), $out->notes]);
         $in = StockMovement::where('type', MovementType::OpnameIn)->sole();
         $this->assertSame([$this->pipe->id, '0.500', 5000], [$in->product_id, $in->qty_change, $in->value_change]);
@@ -155,6 +155,61 @@ class OpnameFlowTest extends TestCase
 
         $this->assertSame('112.000', $this->balance($this->cable)[0]);
         $this->assertSame(1, StockMovement::where('type', MovementType::OpnameIn)->count());
+    }
+
+    public function test_open_opnames_show_todays_stock_and_finished_ones_keep_the_saved_stock(): void
+    {
+        // QA bug #4: counted at 115, then rejected; meanwhile 5 mtr leave the warehouse.
+        $id = $this->createOpname([[$this->cable, '112']]);
+        $this->postJson("/api/v1/stock-opnames/{$id}/submit")->assertOk();
+        Sanctum::actingAs($this->owner);
+        $this->postJson("/api/v1/stock-opnames/{$id}/reject", ['reason' => 'Tolong hitung ulang kabel'])->assertOk();
+
+        Sanctum::actingAs($this->gudang);
+        $this->postJson('/api/v1/stock-outs', [
+            'project_id' => Project::factory()->create()->id,
+            'person_name' => 'Budi',
+            'transaction_date' => '2026-10-27',
+            'items' => [['product_id' => $this->cable->id, 'qty' => '5']],
+        ])->assertCreated();
+
+        // Draft (rejected) and waiting: today's stock 110, not the 115 saved with the items.
+        $draft = $this->getJson("/api/v1/stock-opnames/{$id}")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'draft')
+            ->assertJsonPath('data.items.0.system_qty', '110.000')
+            ->assertJsonPath('data.items.0.diff_qty', null);
+        $this->assertNoMoneyKeys($draft);
+        $this->postJson("/api/v1/stock-opnames/{$id}/submit")->assertOk()->assertJsonPath('data.items.0.system_qty', '110.000');
+
+        // After approval the saved values are shown, even when stock changes later.
+        Sanctum::actingAs($this->owner);
+        $this->postJson("/api/v1/stock-opnames/{$id}/post")->assertOk()->assertJsonPath('data.items.0.diff_qty', '2.000');
+        $this->postJson('/api/v1/stock-outs', [
+            'project_id' => Project::factory()->create()->id,
+            'person_name' => 'Budi',
+            'transaction_date' => '2026-10-27',
+            'items' => [['product_id' => $this->cable->id, 'qty' => '2']],
+        ])->assertCreated();
+        $this->getJson("/api/v1/stock-opnames/{$id}")
+            ->assertOk()
+            ->assertJsonPath('data.items.0.system_qty', '110.000')
+            ->assertJsonPath('data.items.0.counted_qty', '112.000')
+            ->assertJsonPath('data.items.0.diff_qty', '2.000');
+    }
+
+    public function test_texts_are_indonesian(): void
+    {
+        $id = $this->createOpname([[$this->cable, '112']]);
+        $this->postJson("/api/v1/stock-opnames/{$id}/submit")->assertOk();
+        Sanctum::actingAs($this->owner);
+        $this->postJson("/api/v1/stock-opnames/{$id}/post")->assertOk();
+
+        $number = 'SO-'.str_pad((string) $id, 6, '0', STR_PAD_LEFT);
+        $this->assertSame("Membuat stok opname {$number} tanggal 27 Okt 2026", AuditLog::where('action', AuditAction::OPNAME_CREATED)->sole()->summary);
+        $this->assertStringStartsWith("Menyetujui stok opname {$number}", AuditLog::where('action', AuditAction::OPNAME_POSTED)->sole()->summary);
+        $this->assertSame("Stok opname {$number}", StockMovement::where('type', MovementType::OpnameOut)->sole()->notes);
+        $this->assertSame(0, AuditLog::where('summary', 'like', '%stock opname%')->count());
     }
 
     public function test_an_opname_without_differences_posts_without_movements(): void

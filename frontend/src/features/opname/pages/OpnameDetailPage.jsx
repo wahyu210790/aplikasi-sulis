@@ -16,6 +16,7 @@ import { formatDate, formatDateTime } from '../../../lib/format.js';
 import { can } from '../../../lib/permissions.js';
 import { useOpname, useOpnameAction } from '../api.js';
 import { OpnameCountEditor } from '../components/OpnameCountEditor.jsx';
+import { diffClass, qtyDiff } from '../diff.js';
 
 function Field({ label, children }) {
   return (
@@ -55,11 +56,6 @@ const ACTIONS = {
   },
 };
 
-function diffClass(value) {
-  if (value === null || Number(value) === 0) return 'text-muted';
-  return Number(value) > 0 ? 'text-success' : 'text-warning';
-}
-
 export default function OpnameDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -91,6 +87,9 @@ export default function OpnameDetailPage() {
   const isDraft = item.status === 'draft';
   const isWaiting = item.status === 'menunggu_persetujuan';
   const isDone = item.status === 'selesai';
+  // Selisih: final after approval; while waiting it is the expected one against today's stock (QA bug #4).
+  const showDiff = isDone || isWaiting;
+  const diffOf = (line) => (isDone ? line.diff_qty : qtyDiff(line.counted_qty, line.system_qty));
   const canManage = can(user, 'opname.manage');
   const canApprove = can(user, 'opname.approve');
 
@@ -145,7 +144,7 @@ export default function OpnameDetailPage() {
       {isWaiting ? (
         <div role="status" className="mb-6 rounded-card border border-line bg-info-soft px-4 py-3 text-sm text-info sm:px-5">
           {canApprove
-            ? 'Periksa hasil hitung di bawah. Stok sistem dihitung ulang saat Anda menyetujui.'
+            ? 'Periksa hasil hitung di bawah. Stok sistem dan selisih di bawah memakai stok saat ini, dan dihitung ulang saat Anda menyetujui.'
             : 'Menunggu persetujuan Owner. Stok belum berubah.'}
         </div>
       ) : null}
@@ -176,7 +175,7 @@ export default function OpnameDetailPage() {
                     <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-muted uppercase">Barang</th>
                     <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-muted uppercase">Stok sistem</th>
                     <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-muted uppercase">Hasil hitung</th>
-                    {isDone ? <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-muted uppercase">Selisih</th> : null}
+                    {showDiff ? <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-muted uppercase">Selisih</th> : null}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
@@ -193,10 +192,10 @@ export default function OpnameDetailPage() {
                       <td className="px-4 py-3 text-right font-medium">
                         <Qty value={line.counted_qty} unit={line.product.unit_symbol} />
                       </td>
-                      {isDone ? (
-                        <td className={cn('px-4 py-3 text-right font-medium', diffClass(line.diff_qty))}>
-                          {Number(line.diff_qty) > 0 ? '+' : ''}
-                          <Qty value={line.diff_qty} unit={line.product.unit_symbol} />
+                      {showDiff ? (
+                        <td className={cn('px-4 py-3 text-right font-medium', diffClass(diffOf(line)))}>
+                          {Number(diffOf(line)) > 0 ? '+' : ''}
+                          <Qty value={diffOf(line)} unit={line.product.unit_symbol} />
                         </td>
                       ) : null}
                     </tr>

@@ -10,12 +10,14 @@ import { Input } from '../../../components/ui/Input.jsx';
 import { NumberInput } from '../../../components/ui/NumberInput.jsx';
 import { Qty } from '../../../components/ui/Qty.jsx';
 import { useToast } from '../../../components/ui/useToast.js';
+import { cn } from '../../../lib/cn.js';
 import { fieldErrors } from '../../../lib/formErrors.js';
 import { formatQty, parseQty } from '../../../lib/format.js';
 import { ProductPicker } from '../../stock/components/ProductPicker.jsx';
 import { StickySubmitBar } from '../../stock/components/StickySubmitBar.jsx';
 import { unitOf } from '../../stock/utils.js';
 import { useOpnameAction, useSaveOpnameItems } from '../api.js';
+import { diffClass, qtyDiff } from '../diff.js';
 
 const MAX_ITEMS = 50;
 let nextKey = 1;
@@ -40,7 +42,8 @@ function toItems(rows) {
 }
 
 // Counting page of a DRAFT opname (docs/desain-v2.md B5.5): search a product, type the counted quantity.
-// Gudang sees the system stock while counting (H7). Inactive products may be counted too.
+// Gudang sees the CURRENT system stock while counting (H7; the API sends today's stock for open opnames, QA bug #4)
+// and the expected Selisih (hasil hitung − stok sistem). Inactive products may be counted too.
 export function OpnameCountEditor({ opname }) {
   const toast = useToast();
   const save = useSaveOpnameItems();
@@ -130,6 +133,7 @@ export function OpnameCountEditor({ opname }) {
             <ul className="divide-y divide-line rounded-control border border-line">
               {rows.map((row, index) => {
                 const unit = unitOf(row.product);
+                const diff = qtyDiff(parseQty(row.counted), row.systemQty);
                 return (
                   <li key={row.key} className="space-y-3 p-3 sm:p-4">
                     <div className="flex items-start justify-between gap-3">
@@ -141,6 +145,15 @@ export function OpnameCountEditor({ opname }) {
                         <div className="font-mono text-xs text-muted">{row.product.sku}</div>
                         <div className="mt-1 text-sm text-muted">
                           Stok sistem: <Qty value={row.systemQty} unit={unit} className="font-medium text-ink" />
+                          {diff !== null ? (
+                            <>
+                              {' · '}Selisih:{' '}
+                              <span className={cn('font-medium', diffClass(diff))}>
+                                {Number(diff) > 0 ? '+' : ''}
+                                <Qty value={diff} unit={unit} />
+                              </span>
+                            </>
+                          ) : null}
                         </div>
                       </div>
                       <IconButton

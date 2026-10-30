@@ -73,7 +73,7 @@ class StockOpnameController extends Controller
             ]);
             $opname->update(['number' => 'SO-'.str_pad((string) $opname->id, 6, '0', STR_PAD_LEFT)]);
 
-            $this->audit->log(AuditAction::OPNAME_CREATED, $opname, "Membuat stock opname {$opname->number} tanggal {$opname->opname_date->format('d-m-Y')}", null, [
+            $this->audit->log(AuditAction::OPNAME_CREATED, $opname, "Membuat stok opname {$opname->number} tanggal {$opname->opname_date->translatedFormat('j M Y')}", null, [
                 'opname_date' => $opname->opname_date->toDateString(),
                 'notes' => $opname->notes,
             ]);
@@ -103,7 +103,7 @@ class StockOpnameController extends Controller
             }
 
             $count = count($request->validated('items'));
-            $this->audit->log(AuditAction::OPNAME_UPDATED, $opname, "Mengisi hasil hitung stock opname {$opname->number} ({$count} barang)", $before, $this->itemsSnapshot($opname));
+            $this->audit->log(AuditAction::OPNAME_UPDATED, $opname, "Mengisi hasil hitung stok opname {$opname->number} ({$count} barang)", $before, $this->itemsSnapshot($opname));
         });
 
         return $this->respond($request, $stockOpname);
@@ -131,7 +131,7 @@ class StockOpnameController extends Controller
                 'reject_reason' => null,
             ]);
 
-            $this->audit->log(AuditAction::OPNAME_SUBMITTED, $opname, "Mengajukan stock opname {$opname->number} ({$items->count()} barang) untuk disetujui Owner", ['status' => OpnameStatus::Draft->value], ['status' => OpnameStatus::MenungguPersetujuan->value]);
+            $this->audit->log(AuditAction::OPNAME_SUBMITTED, $opname, "Mengajukan stok opname {$opname->number} ({$items->count()} barang) untuk disetujui Owner", ['status' => OpnameStatus::Draft->value], ['status' => OpnameStatus::MenungguPersetujuan->value]);
         });
 
         return $this->respond($request, $stockOpname);
@@ -164,7 +164,7 @@ class StockOpnameController extends Controller
             }
 
             $date = $opname->opname_date->toDateString();
-            $notes = "Stock opname {$opname->number}";
+            $notes = "Stok opname {$opname->number}";
             if ($out !== []) {
                 $this->ledger->apply($out, new MovementContext(MovementType::OpnameOut, $date, $request->user()->id, notes: $notes));
             }
@@ -178,7 +178,7 @@ class StockOpnameController extends Controller
             $this->audit->log(
                 AuditAction::OPNAME_POSTED,
                 $opname,
-                "Menyetujui stock opname {$opname->number}: {$items->count()} barang dihitung, {$changed} barang dikoreksi",
+                "Menyetujui stok opname {$opname->number}: {$items->count()} barang dihitung, {$changed} barang dikoreksi",
                 ['status' => OpnameStatus::MenungguPersetujuan->value],
                 ['status' => OpnameStatus::Selesai->value, 'items' => $this->itemsSnapshot($opname)['items']],
             );
@@ -202,7 +202,7 @@ class StockOpnameController extends Controller
                 'reject_reason' => $reason,
             ]);
 
-            $this->audit->log(AuditAction::OPNAME_REJECTED, $opname, "Menolak stock opname {$opname->number} (kembali ke Draft): {$reason}", ['status' => OpnameStatus::MenungguPersetujuan->value], ['status' => OpnameStatus::Draft->value, 'reason' => $reason]);
+            $this->audit->log(AuditAction::OPNAME_REJECTED, $opname, "Menolak stok opname {$opname->number} (kembali ke Draft): {$reason}", ['status' => OpnameStatus::MenungguPersetujuan->value], ['status' => OpnameStatus::Draft->value, 'reason' => $reason]);
         });
 
         return $this->respond($request, $stockOpname);
@@ -216,7 +216,7 @@ class StockOpnameController extends Controller
 
             $opname->update(['status' => OpnameStatus::Batal, 'cancelled_by' => $request->user()->id, 'cancelled_at' => now()]);
 
-            $this->audit->log(AuditAction::OPNAME_CANCELLED, $opname, "Membatalkan stock opname {$opname->number} ({$oldStatus->label()})", ['status' => $oldStatus->value], ['status' => OpnameStatus::Batal->value]);
+            $this->audit->log(AuditAction::OPNAME_CANCELLED, $opname, "Membatalkan stok opname {$opname->number} ({$oldStatus->label()})", ['status' => $oldStatus->value], ['status' => OpnameStatus::Batal->value]);
         });
 
         return $this->respond($request, $stockOpname);
@@ -247,7 +247,7 @@ class StockOpnameController extends Controller
 
     private function respond(Request $request, StockOpname $opname, int $status = 200): JsonResponse
     {
-        $opname = $opname->fresh(['creator', 'submitter', 'poster', 'canceller', 'rejecter', 'items.product.unit']);
+        $opname = $opname->fresh(['creator', 'submitter', 'poster', 'canceller', 'rejecter', 'items.product.unit', 'items.product.stockBalance']);
 
         return response()->json(['data' => (new StockOpnameResource($opname))->resolve($request)], $status);
     }
